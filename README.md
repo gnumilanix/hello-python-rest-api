@@ -1,4 +1,4 @@
-# bowtie
+# necktie
 
 A Python package, to be served as an API and packaged with Docker.
 
@@ -28,7 +28,7 @@ ruff format --check .
 ```
 ├── pyproject.toml      # Package metadata and tool config
 ├── src/
-│   └── bowtie/         # Package source
+│   └── necktie/         # Package source
 │       ├── __init__.py
 │       └── main.py
 └── tests/              # Test suite

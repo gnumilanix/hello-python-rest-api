@@ -3,13 +3,18 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "bowtie"
+name = "necktie"
 version = "0.1.0"
-description = "bowtie API service"
+description = "necktie API service"
 readme = "README.md"
 requires-python = ">=3.6"
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "jetbase",
+    "python-dotenv",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -18,7 +23,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/bowtie"]
+packages = ["src/necktie"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
