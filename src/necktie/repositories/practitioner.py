@@ -21,8 +21,10 @@ class PractitionerRepository:
         category_id: int | None = None,
         min_fee: int | None = None,
         max_fee: int | None = None,
+        offset: int = 0,
+        limit: int = 20,
     ) -> Sequence[Practitioner]:
-        """Return practitioners matching the optional filters."""
+        """Return practitioners matching the optional filters, paginated."""
         stmt = with_practitioner_relations(select(Practitioner))
         if district_id is not None:
             stmt = stmt.where(Practitioner.district_id == district_id)
@@ -32,6 +34,7 @@ class PractitionerRepository:
             stmt = stmt.where(Practitioner.consultation_fee >= min_fee)
         if max_fee is not None:
             stmt = stmt.where(Practitioner.consultation_fee <= max_fee)
+        stmt = stmt.order_by(Practitioner.id).offset(offset).limit(limit)
         return self.db.scalars(stmt).all()
 
     def find_by_id(self, practitioner_id: int) -> Practitioner | None:

@@ -31,13 +31,17 @@ class PractitionerService:
         min_fee: int | None = None,
         max_fee: int | None = None,
         language: str = "en-US",
+        offset: int = 0,
+        limit: int = 20,
     ) -> list[DoctorListItem]:
-        """List doctors localized to ``language``."""
+        """List doctors localized to ``language``, paginated."""
         doctors = self.repo.find_all(
             district_id=district_id,
             category_id=category_id,
             min_fee=min_fee,
             max_fee=max_fee,
+            offset=offset,
+            limit=limit,
         )
         return [to_list_item(p, language) for p in doctors]
 

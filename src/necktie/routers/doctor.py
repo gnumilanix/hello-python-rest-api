@@ -35,15 +35,19 @@ def list_doctors(
     min_fee: int | None = Query(None, ge=0, description="Min consultation fee"),
     max_fee: int | None = Query(None, ge=0, description="Max consultation fee"),
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
+    page: int = Query(0, ge=0, description="Page number (0-based)"),
+    size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
     service: PractitionerService = Depends(get_service),
 ) -> list[DoctorListItem]:
-    """List doctors, filterable by district, category, fee range, language."""
+    """List doctors, filterable and paginated."""
     return service.list_doctors(
         district_id=district,
         category_id=category,
         min_fee=min_fee,
         max_fee=max_fee,
         language=language,
+        offset=page * size,
+        limit=size,
     )
 
 
