@@ -27,9 +27,7 @@ class Practitioner(SQLModel, table=True):
     category_id: int = Field(foreign_key="category.id")
     district_id: int = Field(foreign_key="district.id")
     place_id: str | None = None  # Google Places ID
-    phone_numbers: list[str] | None = Field(
-        default=None, sa_column=Column(JSONB)
-    )
+    phone_numbers: list[str] | None = Field(default=None, sa_column=Column(JSONB))
     member_exclusive_fee: int | None = None
     consultation_fee: int | None = None
     # HK clinics either open or close on public holidays as a whole,

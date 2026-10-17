@@ -3,10 +3,10 @@
 from collections.abc import Iterable
 
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, with_loader_criteria
 from sqlmodel import Session
 
-from necktie.models import District
+from necktie.models import District, DistrictTranslation
 
 
 class DistrictRepository:
@@ -15,11 +15,16 @@ class DistrictRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def find_all(self) -> Iterable[District]:
-        """Return all districts ordered by sort_order, with translations."""
+    def find_all_localized(self, language: str) -> Iterable[District]:
+        """Return all districts ordered by sort_order, loading only ``language``."""
         stmt = (
             select(District)
-            .options(selectinload(District.translations))
+            .options(
+                selectinload(District.translations),
+                with_loader_criteria(
+                    DistrictTranslation, DistrictTranslation.language_code == language
+                ),
+            )
             .order_by(District.sort_order)
         )
         return self.db.scalars(stmt).all()

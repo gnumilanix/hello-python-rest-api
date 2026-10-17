@@ -13,4 +13,6 @@ class CategoryService:
 
     def list_categories(self, language: str) -> list[CategorySchema]:
         """List categories localized to ``language``."""
-        return [to_category(c, language) for c in self.repo.find_all()]
+        return [
+            to_category(c, language) for c in self.repo.find_all_localized(language)
+        ]

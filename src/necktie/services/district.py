@@ -13,4 +13,6 @@ class DistrictService:
 
     def list_districts(self, language: str) -> list[DistrictSchema]:
         """List districts localized to ``language``, ordered by sort_order."""
-        return [to_district(d, language) for d in self.repo.find_all()]
+        return [
+            to_district(d, language) for d in self.repo.find_all_localized(language)
+        ]

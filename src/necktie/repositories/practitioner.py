@@ -63,15 +63,11 @@ class PractitionerRepository:
 
     def category_exists(self, category_id: int) -> bool:
         """Whether the category id is valid."""
-        return self.db.scalar(
-            select(exists().where(Category.id == category_id))
-        )
+        return self.db.scalar(select(exists().where(Category.id == category_id)))
 
     def district_exists(self, district_id: int) -> bool:
         """Whether the district id is valid."""
-        return self.db.scalar(
-            select(exists().where(District.id == district_id))
-        )
+        return self.db.scalar(select(exists().where(District.id == district_id)))
 
     def commit(self) -> None:
         """Commit the current transaction."""

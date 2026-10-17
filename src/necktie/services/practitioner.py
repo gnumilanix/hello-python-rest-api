@@ -63,9 +63,7 @@ class PractitionerService:
         self.repo.commit()
         return to_detail(doctor)
 
-    def create_doctors_batch(
-        self, payloads: list[DoctorCreate]
-    ) -> list[DoctorDetail]:
+    def create_doctors_batch(self, payloads: list[DoctorCreate]) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
         doctors = [self._build(p) for p in payloads]
         self.repo.add_all(doctors)

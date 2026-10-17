@@ -1,7 +1,6 @@
 """Mappers between Practitioner ORM models and API schemas."""
 
 from necktie.enums import DayOfWeek
-from necktie.mappers.translation import pick_translation
 from necktie.models import Practitioner
 from necktie.schemas import (
     CategoryRef,
@@ -16,10 +15,14 @@ from necktie.schemas import (
 
 
 def to_doctor(p: Practitioner, language: str) -> Doctor:
-    """Serialize a practitioner to a localized doctor (single language)."""
-    cat = pick_translation(p.category.translations, language)
-    dist = pick_translation(p.district.translations, language)
-    own = pick_translation(p.translations, language)
+    """Serialize a practitioner to a localized doctor (single language).
+
+    Translations are pre-filtered to ``language`` by the query, so the first
+    translation of each relation is the localized one.
+    """
+    cat = p.category.translations[0] if p.category.translations else None
+    dist = p.district.translations[0] if p.district.translations else None
+    own = p.translations[0] if p.translations else None
     return Doctor(
         id=p.id,
         category=CategoryRef(id=p.category.id, name=cat.name if cat else ""),
