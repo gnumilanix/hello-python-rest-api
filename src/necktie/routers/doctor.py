@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlmodel import Session
 
 from necktie.db.session import get_db
+from necktie.mappers import to_detail, to_list_item
 from necktie.models import (
     Category,
     District,
@@ -17,11 +18,7 @@ from necktie.models import (
     Practitioner,
     PractitionerTranslation,
 )
-from necktie.routers.helpers import (
-    to_detail,
-    to_list_item,
-    with_practitioner_relations,
-)
+from necktie.routers.helpers import with_practitioner_relations
 from necktie.schemas import DoctorCreate, DoctorDetail, DoctorListItem
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
