@@ -8,19 +8,19 @@ from necktie.schemas import (
     CategoryTranslated,
     DistrictRef,
     DistrictTranslated,
+    Doctor,
     DoctorDetail,
-    DoctorListItem,
+    OpeningHour,
     OpeningHourDetail,
-    OpeningHourListItem,
 )
 
 
-def to_list_item(p: Practitioner, language: str) -> DoctorListItem:
-    """Serialize a practitioner to a localized list item."""
+def to_list_item(p: Practitioner, language: str) -> Doctor:
+    """Serialize a practitioner to a localized doctor."""
     cat = pick_translation(p.category.translations, language)
     dist = pick_translation(p.district.translations, language)
     own = pick_translation(p.translations, language)
-    return DoctorListItem(
+    return Doctor(
         id=p.id,
         category=CategoryRef(id=p.category.id, name=cat.name if cat else ""),
         district=DistrictRef(id=p.district.id, name=dist.name if dist else ""),
@@ -32,7 +32,7 @@ def to_list_item(p: Practitioner, language: str) -> DoctorListItem:
         consultation_fee=p.consultation_fee,
         is_open_on_public_holidays=p.is_open_on_public_holidays,
         opening_hours=[
-            OpeningHourListItem(
+            OpeningHour(
                 day_of_week=DayOfWeek(oh.day_of_week).label,
                 open_time=oh.open_time,
                 close_time=oh.close_time,

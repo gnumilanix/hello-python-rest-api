@@ -1,14 +1,14 @@
-"""Doctor listing localized to the requested language."""
+"""Localized doctor response schema."""
 
 from pydantic import BaseModel
 
 from necktie.schemas.category_ref import CategoryRef
 from necktie.schemas.district_ref import DistrictRef
-from necktie.schemas.opening_hour_list_item import OpeningHourListItem
+from necktie.schemas.opening_hour import OpeningHour
 
 
-class DoctorListItem(BaseModel):
-    """Doctor listing localized to the requested language."""
+class Doctor(BaseModel):
+    """Doctor localized to the requested language."""
 
     id: int
     category: CategoryRef
@@ -20,4 +20,4 @@ class DoctorListItem(BaseModel):
     member_exclusive_fee: int | None
     consultation_fee: int | None
     is_open_on_public_holidays: bool
-    opening_hours: list[OpeningHourListItem]
+    opening_hours: list[OpeningHour]

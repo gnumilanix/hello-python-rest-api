@@ -2,10 +2,12 @@
 
 from fastapi import FastAPI
 
-from necktie.routers import doctor_router
+from necktie.routers import category_router, district_router, doctor_router
 
 app = FastAPI(title="necktie", version="0.1.0")
 app.include_router(doctor_router)
+app.include_router(category_router)
+app.include_router(district_router)
 
 
 @app.get("/health")

@@ -1,11 +1,11 @@
-"""Opening hour entry in list responses (day name)."""
+"""Opening hour entry with day name."""
 
 from datetime import time
 
 from pydantic import BaseModel
 
 
-class OpeningHourListItem(BaseModel):
+class OpeningHour(BaseModel):
     """Opening hour entry in list responses (day name)."""
 
     day_of_week: str

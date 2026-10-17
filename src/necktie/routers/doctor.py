@@ -10,7 +10,7 @@ from sqlmodel import Session
 
 from necktie.db.session import get_db
 from necktie.repositories import PractitionerRepository
-from necktie.schemas import DoctorCreate, DoctorDetail, DoctorListItem
+from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services import (
     CategoryNotFoundError,
     DistrictNotFoundError,
@@ -28,7 +28,7 @@ def get_service(db: Session = Depends(get_db)) -> PractitionerService:
     return PractitionerService(PractitionerRepository(db))
 
 
-@router.get("", response_model=list[DoctorListItem])
+@router.get("", response_model=list[Doctor])
 def list_doctors(
     district: int | None = Query(None, description="District id"),
     category: int | None = Query(None, description="Category id"),
@@ -38,7 +38,7 @@ def list_doctors(
     page: int = Query(0, ge=0, description="Page number (0-based)"),
     size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
     service: PractitionerService = Depends(get_service),
-) -> list[DoctorListItem]:
+) -> list[Doctor]:
     """List doctors, filterable and paginated."""
     return service.list_doctors(
         district_id=district,

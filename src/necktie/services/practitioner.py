@@ -3,7 +3,7 @@
 from necktie.mappers import to_detail, to_list_item
 from necktie.models import OperatingHour, Practitioner, PractitionerTranslation
 from necktie.repositories import PractitionerRepository
-from necktie.schemas import DoctorCreate, DoctorDetail, DoctorListItem
+from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 
 
 class PractitionerNotFoundError(Exception):
@@ -33,7 +33,7 @@ class PractitionerService:
         language: str = "en-US",
         offset: int = 0,
         limit: int = 20,
-    ) -> list[DoctorListItem]:
+    ) -> list[Doctor]:
         """List doctors localized to ``language``, paginated."""
         doctors = self.repo.find_all(
             district_id=district_id,
