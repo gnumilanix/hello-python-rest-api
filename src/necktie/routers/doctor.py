@@ -28,36 +28,36 @@ def get_service(db: Session = Depends(get_db)) -> PractitionerService:
     return PractitionerService(PractitionerRepository(db))
 
 
-@router.get("", response_model=list[Doctor])
+@router.get("", response_model=list[DoctorDetail])
 def list_doctors(
     district: int | None = Query(None, description="District id"),
     category: int | None = Query(None, description="Category id"),
     min_fee: int | None = Query(None, ge=0, description="Min consultation fee"),
     max_fee: int | None = Query(None, ge=0, description="Max consultation fee"),
-    language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
     page: int = Query(0, ge=0, description="Page number (0-based)"),
     size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
     service: PractitionerService = Depends(get_service),
-) -> list[Doctor]:
-    """List doctors, filterable and paginated."""
+) -> list[DoctorDetail]:
+    """List doctors with all translations, filterable and paginated."""
     return service.list_doctors(
         district_id=district,
         category_id=category,
         min_fee=min_fee,
         max_fee=max_fee,
-        language=language,
         offset=page * size,
         limit=size,
     )
 
 
-@router.get("/{doctor_id}", response_model=DoctorDetail)
+@router.get("/{doctor_id}", response_model=Doctor)
 def get_doctor(
-    doctor_id: int, service: PractitionerService = Depends(get_service)
-) -> DoctorDetail:
-    """Get one doctor with all translations."""
+    doctor_id: int,
+    language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
+    service: PractitionerService = Depends(get_service),
+) -> Doctor:
+    """Get one doctor localized to ``language``."""
     try:
-        return service.get_doctor(doctor_id)
+        return service.get_doctor(doctor_id, language=language)
     except PractitionerNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
 

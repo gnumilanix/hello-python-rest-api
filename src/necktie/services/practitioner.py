@@ -1,6 +1,6 @@
 """Business logic for the doctor resource."""
 
-from necktie.mappers import to_detail, to_list_item
+from necktie.mappers import to_detail, to_doctor
 from necktie.models import OperatingHour, Practitioner, PractitionerTranslation
 from necktie.repositories import PractitionerRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
@@ -33,8 +33,8 @@ class PractitionerService:
         language: str = "en-US",
         offset: int = 0,
         limit: int = 20,
-    ) -> list[Doctor]:
-        """List doctors localized to ``language``, paginated."""
+    ) -> list[DoctorDetail]:
+        """List doctors with all translations, paginated."""
         doctors = self.repo.find_all(
             district_id=district_id,
             category_id=category_id,
@@ -43,14 +43,14 @@ class PractitionerService:
             offset=offset,
             limit=limit,
         )
-        return [to_list_item(p, language) for p in doctors]
+        return [to_detail(p) for p in doctors]
 
-    def get_doctor(self, doctor_id: int) -> DoctorDetail:
-        """Get one doctor, raising PractitionerNotFoundError if missing."""
+    def get_doctor(self, doctor_id: int, language: str = "en-US") -> Doctor:
+        """Get one doctor localized, raising PractitionerNotFoundError if missing."""
         doctor = self.repo.find_by_id(doctor_id)
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
-        return to_detail(doctor)
+        return to_doctor(doctor, language)
 
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""

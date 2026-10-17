@@ -15,8 +15,8 @@ from necktie.schemas import (
 )
 
 
-def to_list_item(p: Practitioner, language: str) -> Doctor:
-    """Serialize a practitioner to a localized doctor."""
+def to_doctor(p: Practitioner, language: str) -> Doctor:
+    """Serialize a practitioner to a localized doctor (single language)."""
     cat = pick_translation(p.category.translations, language)
     dist = pick_translation(p.district.translations, language)
     own = pick_translation(p.translations, language)
