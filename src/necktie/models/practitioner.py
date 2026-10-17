@@ -27,7 +27,6 @@ class Practitioner(SQLModel, table=True):
     place_id: str | None = None  # Google Places ID
     # Comma-separated in the DB; use ``phone_number_list`` for a list view.
     phone_numbers: str | None = None
-    is_active: bool = True
     member_exclusive_fee: int | None = None
     consultation_fee: int | None = None
     # HK clinics either open or close on public holidays as a whole,
