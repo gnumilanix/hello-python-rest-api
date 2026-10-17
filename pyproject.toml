@@ -12,6 +12,7 @@ license = { text = "MIT" }
 dependencies = [
     "fastapi[standard]>=0.115",
     "langcodes>=3.4",
+    "phonenumbers>=8.13",
     "uvicorn[standard]>=0.30",
     "sqlmodel>=0.0.22",
     "psycopg[binary]>=3.1",
