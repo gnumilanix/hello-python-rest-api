@@ -1,6 +1,6 @@
 """Data access for districts."""
 
-from collections.abc import Sequence
+from collections.abc import Iterable
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -15,7 +15,7 @@ class DistrictRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def find_all(self) -> Sequence[District]:
+    def find_all(self) -> Iterable[District]:
         """Return all districts ordered by sort_order, with translations."""
         stmt = (
             select(District)

@@ -1,6 +1,6 @@
 """Data access for categories."""
 
-from collections.abc import Sequence
+from collections.abc import Iterable
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -15,7 +15,7 @@ class CategoryRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def find_all(self) -> Sequence[Category]:
+    def find_all(self) -> Iterable[Category]:
         """Return all categories with their translations."""
         stmt = select(Category).options(selectinload(Category.translations))
         return self.db.scalars(stmt).all()

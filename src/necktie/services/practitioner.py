@@ -58,7 +58,8 @@ class PractitionerService:
 
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""
-        doctor = self.repo.add_all([self._build(payload)])[0]
+        doctor = self._build(payload)
+        self.repo.add_all([doctor])
         self.repo.commit()
         return to_detail(doctor)
 
@@ -66,7 +67,8 @@ class PractitionerService:
         self, payloads: list[DoctorCreate]
     ) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
-        doctors = self.repo.add_all([self._build(p) for p in payloads])
+        doctors = [self._build(p) for p in payloads]
+        self.repo.add_all(doctors)
         self.repo.commit()
         return [to_detail(d) for d in doctors]
 

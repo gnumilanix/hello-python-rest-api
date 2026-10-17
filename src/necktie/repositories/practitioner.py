@@ -1,6 +1,6 @@
 """Data access for practitioners (the doctor resource)."""
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 
 from sqlalchemy import select
 from sqlmodel import Session
@@ -26,7 +26,7 @@ class PractitionerRepository:
         max_fee: int | None,
         offset: int,
         limit: int,
-    ) -> Sequence[Practitioner]:
+    ) -> Iterable[Practitioner]:
         """Return practitioners matching the filters, paginated."""
         stmt = with_practitioner_relations(select(Practitioner))
         if district_id is not None:
@@ -57,13 +57,9 @@ class PractitionerRepository:
         )
         return self.db.scalars(stmt).first()
 
-    def add_all(
-        self, practitioners: Iterable[Practitioner]
-    ) -> Sequence[Practitioner]:
+    def add_all(self, practitioners: Iterable[Practitioner]) -> None:
         """Stage practitioners for insert."""
-        items = list(practitioners)
-        self.db.add_all(items)
-        return items
+        self.db.add_all(practitioners)
 
     def category_exists(self, category_id: int) -> bool:
         """Whether the category id is valid."""
