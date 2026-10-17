@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.6"
 license = { text = "MIT" }
 dependencies = [
-    "fastapi>=0.115",
+    "fastapi[standard]>=0.115",
     "langcodes>=3.4",
     "uvicorn[standard]>=0.30",
     "sqlmodel>=0.0.22",
@@ -28,6 +28,9 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/necktie"]
+
+[tool.fastapi]
+entrypoint = "necktie.main:app"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
