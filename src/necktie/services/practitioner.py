@@ -9,7 +9,7 @@ from necktie.mappers import (
 from necktie.models import Practitioner
 from necktie.repositories import PractitionerRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
-from necktie.utils import cache
+from necktie.utils.cache import cached, flushes_cache
 
 
 class PractitionerNotFoundError(Exception):
@@ -30,6 +30,7 @@ class PractitionerService:
     def __init__(self, repository: PractitionerRepository) -> None:
         self.repo = repository
 
+    @cached("doctors")
     def list_doctors(
         self,
         district_id: int | None,
@@ -39,35 +40,7 @@ class PractitionerService:
         offset: int,
         limit: int,
     ) -> list[DoctorDetail]:
-        """List doctors with all translations, paginated (cached)."""
-        key = cache.build_key(
-            "doctors",
-            {
-                "district": district_id,
-                "category": category_id,
-                "min_fee": min_fee,
-                "max_fee": max_fee,
-                "offset": offset,
-                "limit": limit,
-            },
-        )
-        return cache.get_or_fetch(
-            key,
-            lambda: self._find_doctors(
-                district_id, category_id, min_fee, max_fee, offset, limit
-            ),
-            decode=lambda data: [DoctorDetail.model_validate(d) for d in data],
-        )
-
-    def _find_doctors(
-        self,
-        district_id: int | None,
-        category_id: int | None,
-        min_fee: int | None,
-        max_fee: int | None,
-        offset: int,
-        limit: int,
-    ) -> list[DoctorDetail]:
+        """List doctors with all translations, paginated."""
         doctors = self.repo.find_all(
             district_id=district_id,
             category_id=category_id,
@@ -78,35 +51,28 @@ class PractitionerService:
         )
         return [to_detail(p) for p in doctors]
 
+    @cached("doctor")
     def get_doctor(self, doctor_id: int, language: str) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
-        key = cache.build_key(f"doctors/{doctor_id}", {"language": language})
-        return cache.get_or_fetch(
-            key,
-            lambda: self._find_doctor(doctor_id, language),
-            decode=Doctor.model_validate,
-        )
-
-    def _find_doctor(self, doctor_id: int, language: str) -> Doctor:
         doctor = self.repo.find_by_id_localized(doctor_id, language)
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
         return to_doctor(doctor)
 
+    @flushes_cache
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""
         doctor = self._build(payload)
         self.repo.add_all([doctor])
         self.repo.commit()
-        cache.invalidate_all()
         return to_detail(doctor)
 
+    @flushes_cache
     def create_doctors_batch(self, payloads: list[DoctorCreate]) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
         doctors = [self._build(p) for p in payloads]
         self.repo.add_all(doctors)
         self.repo.commit()
-        cache.invalidate_all()
         return [to_detail(d) for d in doctors]
 
     def _build(self, payload: DoctorCreate) -> Practitioner:

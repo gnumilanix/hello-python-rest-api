@@ -1,18 +1,24 @@
 """Redis-backed caching for read results.
 
-Reads are cached by a key derived from resource name + filter params.
-Mutations flush the whole cache so stale reads are never served.
+Aspect-oriented: read methods are decorated with ``@cached(resource)`` and
+mutations with ``@flushes_cache`` — no manual key handling at call sites.
+Keys derive from the resource name + bound arguments; cached JSON is decoded
+back into the method's annotated return type.
 """
 
+import functools
+import inspect
 import json
 import os
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, get_args, get_origin, get_type_hints
 
 import redis
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
+P = ParamSpec("P")
 T = TypeVar("T")
 
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
@@ -51,26 +57,63 @@ def invalidate_all() -> None:
         _client.delete(key)
 
 
-def get_or_fetch(
-    key: str,
-    fetch: Callable[[], T],
-    decode: Callable[[Any], T] | None = None,
-) -> T:
-    """Return the cached value for ``key``, else call ``fetch``, cache, return it.
+def cached(resource: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Cache the decorated read method under ``resource`` + bound arguments."""
 
-    On a hit, ``decode`` (if given) converts the raw JSON back into ``T``.
-    ``fetch`` returns Pydantic models (or dicts); results are stored via their
-    ``model_dump()``/JSON-able form and served back on subsequent hits.
-    """
-    hit = get(key)
-    if hit is not None:
-        return decode(hit) if decode is not None else cast(T, hit)
-    result = fetch()
-    if isinstance(result, list):
-        set(key, [_dump(r) for r in result])
-    else:
-        set(key, _dump(result))
-    return result
+    def decorator(fn: Callable[P, T]) -> Callable[P, T]:
+        signature = inspect.signature(fn)
+        decode: Callable[[Any], T] | None = None
+
+        @functools.wraps(fn)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            nonlocal decode
+            bound = signature.bind(*args, **kwargs)
+            bound.apply_defaults()
+            params = {
+                name: value
+                for name, value in bound.arguments.items()
+                if name != "self"
+            }
+            key = build_key(resource, params)
+            hit = get(key)
+            if hit is not None:
+                if decode is None:
+                    decode = _resolve_decoder(fn)
+                return decode(hit)
+            result = fn(*args, **kwargs)
+            if isinstance(result, list):
+                set(key, [_dump(item) for item in result])
+            else:
+                set(key, _dump(result))
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+def flushes_cache(fn: Callable[P, T]) -> Callable[P, T]:
+    """Flush every cached key after the decorated mutation completes."""
+
+    @functools.wraps(fn)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        result = fn(*args, **kwargs)
+        invalidate_all()
+        return result
+
+    return wrapper
+
+
+def _resolve_decoder(fn: Callable[..., T]) -> Callable[[Any], T]:
+    """Build a JSON→model decoder from ``fn``'s return annotation."""
+    hint = get_type_hints(fn).get("return")
+    if get_origin(hint) is list:
+        (model,) = get_args(hint)
+        if isinstance(model, type) and issubclass(model, BaseModel):
+            return lambda data: [model.model_validate(item) for item in data]
+    if isinstance(hint, type) and issubclass(hint, BaseModel):
+        return hint.model_validate
+    return lambda data: data
 
 
 def _dump(value: object) -> object:
