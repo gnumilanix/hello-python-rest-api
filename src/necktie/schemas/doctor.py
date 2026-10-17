@@ -9,13 +9,13 @@ from necktie.schemas.operating_hour import (
     OperatingHourCreate,
     OperatingHourDetail,
 )
-from necktie.utils import PhoneList
+from necktie.utils import LanguageCode, PhoneList
 
 
 class DoctorTranslationCreate(BaseModel):
     """Translation supplied when creating a doctor."""
 
-    language_code: str = Field(min_length=2, max_length=10)
+    language_code: LanguageCode
     name: str
     address: str
     fee_detail: str | None = None
