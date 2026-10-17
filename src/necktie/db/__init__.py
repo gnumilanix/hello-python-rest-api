@@ -1,6 +1,6 @@
-"""Database package: SQLModel ORM models and session management."""
+"""Database package: session management and ORM model re-exports."""
 
-from necktie.db.models import (
+from necktie.models import (
     Category,
     CategoryTranslation,
     District,

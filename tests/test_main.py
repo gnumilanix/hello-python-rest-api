@@ -1,9 +1,13 @@
-"""Tests for the main module."""
+"""Tests for the FastAPI app."""
 
-from necktie.main import main
+from fastapi.testclient import TestClient
+
+from necktie.main import app
+
+client = TestClient(app)
 
 
-def test_main_runs(capsys) -> None:
-    main()
-    captured = capsys.readouterr()
-    assert "necktie" in captured.out
+def test_health() -> None:
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
