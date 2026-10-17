@@ -2,8 +2,8 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import exists, select
-from sqlmodel import Session
+from sqlalchemy import exists
+from sqlmodel import Session, select
 
 from necktie.models import Category, District, Practitioner
 from necktie.routers.helpers import (
@@ -38,7 +38,7 @@ class PractitionerRepository:
         if max_fee is not None:
             stmt = stmt.where(Practitioner.consultation_fee <= max_fee)
         stmt = stmt.order_by(Practitioner.id).offset(offset).limit(limit)
-        return self.db.scalars(stmt).all()
+        return self.db.exec(stmt).all()
 
     def find_by_id_localized(
         self, practitioner_id: int, language: str
@@ -48,7 +48,7 @@ class PractitionerRepository:
             select(Practitioner).where(Practitioner.id == practitioner_id),
             language,
         )
-        return self.db.scalars(stmt).first()
+        return self.db.exec(stmt).first()
 
     def add_all(self, practitioners: Iterable[Practitioner]) -> None:
         """Stage practitioners for insert."""
@@ -56,11 +56,15 @@ class PractitionerRepository:
 
     def category_exists(self, category_id: int) -> bool:
         """Whether the category id is valid."""
-        return self.db.scalar(select(exists().where(Category.id == category_id)))
+        return bool(
+            self.db.exec(select(exists().where(Category.id == category_id))).first()
+        )
 
     def district_exists(self, district_id: int) -> bool:
         """Whether the district id is valid."""
-        return self.db.scalar(select(exists().where(District.id == district_id)))
+        return bool(
+            self.db.exec(select(exists().where(District.id == district_id))).first()
+        )
 
     def commit(self) -> None:
         """Commit the current transaction."""

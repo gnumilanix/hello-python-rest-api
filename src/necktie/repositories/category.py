@@ -2,9 +2,8 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import select
 from sqlalchemy.orm import selectinload, with_loader_criteria
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from necktie.models import Category, CategoryTranslation
 
@@ -23,4 +22,4 @@ class CategoryRepository:
                 CategoryTranslation, CategoryTranslation.language_code == language
             ),
         )
-        return self.db.scalars(stmt).all()
+        return self.db.exec(stmt).all()

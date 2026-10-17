@@ -5,8 +5,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlmodel import Session
+from sqlmodel import Session, create_engine
 
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 

@@ -2,9 +2,8 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import select
 from sqlalchemy.orm import selectinload, with_loader_criteria
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from necktie.models import District, DistrictTranslation
 
@@ -27,4 +26,4 @@ class DistrictRepository:
             )
             .order_by(District.sort_order)
         )
-        return self.db.scalars(stmt).all()
+        return self.db.exec(stmt).all()
