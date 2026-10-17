@@ -54,7 +54,7 @@ class PractitionerService:
         doctor = self.repo.find_by_id_localized(doctor_id, language)
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
-        return to_doctor(doctor, language)
+        return to_doctor(doctor)
 
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""

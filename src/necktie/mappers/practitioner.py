@@ -14,11 +14,11 @@ from necktie.schemas import (
 )
 
 
-def to_doctor(p: Practitioner, language: str) -> Doctor:
+def to_doctor(p: Practitioner) -> Doctor:
     """Serialize a practitioner to a localized doctor (single language).
 
-    Translations are pre-filtered to ``language`` by the query, so the first
-    translation of each relation is the localized one.
+    Translations are pre-filtered to the requested language by the query, so
+    the first translation of each relation is the localized one.
     """
     cat = p.category.translations[0] if p.category.translations else None
     dist = p.district.translations[0] if p.district.translations else None
