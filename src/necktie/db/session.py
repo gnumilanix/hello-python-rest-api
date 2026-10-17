@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlmodel import Session
 
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
@@ -18,13 +18,9 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
 )
 
 engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
 def get_db() -> Iterator[Session]:
     """FastAPI dependency yielding a database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    with Session(engine, autoflush=False, expire_on_commit=False) as session:
+        yield session

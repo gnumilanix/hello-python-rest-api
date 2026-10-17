@@ -1,6 +1,5 @@
-"""Database package: ORM models and session management."""
+"""Database package: SQLModel ORM models and session management."""
 
-from necktie.db.base import Base
 from necktie.db.models import (
     Category,
     CategoryTranslation,
@@ -12,7 +11,6 @@ from necktie.db.models import (
 )
 
 __all__ = [
-    "Base",
     "Category",
     "CategoryTranslation",
     "District",

@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models for the necktie database.
+"""SQLModel ORM models for the necktie database.
 
 Translatable fields live in dedicated ``*_translations`` tables keyed by
 (parent_id, language_code) so the API can serve multiple languages.
@@ -6,79 +6,61 @@ Translatable fields live in dedicated ``*_translations`` tables keyed by
 
 from datetime import time
 
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    Time,
-)
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from necktie.db.base import Base
+from sqlalchemy import CheckConstraint, Text
+from sqlmodel import Field, Relationship, SQLModel
 
 LANGUAGE_CODE_LENGTH = 10
 
 
-class District(Base):
+class District(SQLModel, table=True):
     __tablename__ = "district"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    sort_order: Mapped[int] = mapped_column(Integer)
+    id: int | None = Field(default=None, primary_key=True)
+    sort_order: int
 
-    translations: Mapped[list["DistrictTranslation"]] = relationship(
-        back_populates="district", cascade="all, delete-orphan"
+    translations: list["DistrictTranslation"] = Relationship(
+        back_populates="district", cascade_delete=True
     )
-    practitioners: Mapped[list["Practitioner"]] = relationship(
-        back_populates="district"
-    )
+    practitioners: list["Practitioner"] = Relationship(back_populates="district")
 
 
-class DistrictTranslation(Base):
+class DistrictTranslation(SQLModel, table=True):
     __tablename__ = "district_translations"
 
-    district_id: Mapped[int] = mapped_column(
-        ForeignKey("district.id", ondelete="CASCADE"), primary_key=True
+    district_id: int = Field(
+        foreign_key="district.id", primary_key=True, ondelete="CASCADE"
     )
-    language_code: Mapped[str] = mapped_column(
-        String(LANGUAGE_CODE_LENGTH), primary_key=True
-    )
-    name: Mapped[str] = mapped_column(Text)
+    language_code: str = Field(max_length=LANGUAGE_CODE_LENGTH, primary_key=True)
+    name: str
 
-    district: Mapped[District] = relationship(back_populates="translations")
+    district: District | None = Relationship(back_populates="translations")
 
 
-class Category(Base):
+class Category(SQLModel, table=True):
     __tablename__ = "category"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name_key: Mapped[str] = mapped_column(Text, unique=True)
+    id: int | None = Field(default=None, primary_key=True)
+    name_key: str = Field(unique=True)
 
-    translations: Mapped[list["CategoryTranslation"]] = relationship(
-        back_populates="category", cascade="all, delete-orphan"
+    translations: list["CategoryTranslation"] = Relationship(
+        back_populates="category", cascade_delete=True
     )
-    practitioners: Mapped[list["Practitioner"]] = relationship(
-        back_populates="category"
-    )
+    practitioners: list["Practitioner"] = Relationship(back_populates="category")
 
 
-class CategoryTranslation(Base):
+class CategoryTranslation(SQLModel, table=True):
     __tablename__ = "category_translations"
 
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("category.id", ondelete="CASCADE"), primary_key=True
+    category_id: int = Field(
+        foreign_key="category.id", primary_key=True, ondelete="CASCADE"
     )
-    language_code: Mapped[str] = mapped_column(
-        String(LANGUAGE_CODE_LENGTH), primary_key=True
-    )
-    name: Mapped[str] = mapped_column(Text)
+    language_code: str = Field(max_length=LANGUAGE_CODE_LENGTH, primary_key=True)
+    name: str
 
-    category: Mapped[Category] = relationship(back_populates="translations")
+    category: Category | None = Relationship(back_populates="translations")
 
 
-class Practitioner(Base):
+class Practitioner(SQLModel, table=True):
     """A practitioner listing.
 
     A practitioner with multiple clinics is intentionally stored as one row
@@ -88,27 +70,26 @@ class Practitioner(Base):
 
     __tablename__ = "practitioners"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
-    district_id: Mapped[int] = mapped_column(ForeignKey("district.id"))
-    place_id: Mapped[str | None] = mapped_column(Text)  # Google Places ID
-    phone_numbers: Mapped[str | None] = mapped_column(Text)  # comma-separated
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    member_exclusive_fee: Mapped[int | None] = mapped_column(Integer)
-    consultation_fee: Mapped[int | None] = mapped_column(Integer)
+    id: int | None = Field(default=None, primary_key=True)
+    category_id: int = Field(foreign_key="category.id")
+    district_id: int = Field(foreign_key="district.id")
+    place_id: str | None = None  # Google Places ID
+    # Comma-separated in the DB; use ``phone_number_list`` for a list view.
+    phone_numbers: str | None = None
+    is_active: bool = True
+    member_exclusive_fee: int | None = None
+    consultation_fee: int | None = None
     # HK clinics either open or close on public holidays as a whole,
     # regardless of the weekday a holiday falls on.
-    is_open_on_public_holidays: Mapped[bool] = mapped_column(
-        Boolean, default=False
-    )
+    is_open_on_public_holidays: bool = False
 
-    category: Mapped[Category] = relationship(back_populates="practitioners")
-    district: Mapped[District] = relationship(back_populates="practitioners")
-    translations: Mapped[list["PractitionerTranslation"]] = relationship(
-        back_populates="practitioner", cascade="all, delete-orphan"
+    category: Category | None = Relationship(back_populates="practitioners")
+    district: District | None = Relationship(back_populates="practitioners")
+    translations: list["PractitionerTranslation"] = Relationship(
+        back_populates="practitioner", cascade_delete=True
     )
-    operating_hours: Mapped[list["OperatingHour"]] = relationship(
-        back_populates="practitioner", cascade="all, delete-orphan"
+    operating_hours: list["OperatingHour"] = Relationship(
+        back_populates="practitioner", cascade_delete=True
     )
 
     @property
@@ -119,25 +100,21 @@ class Practitioner(Base):
         return [p.strip() for p in self.phone_numbers.split(",") if p.strip()]
 
 
-class PractitionerTranslation(Base):
+class PractitionerTranslation(SQLModel, table=True):
     __tablename__ = "practitioners_translations"
 
-    practitioner_id: Mapped[int] = mapped_column(
-        ForeignKey("practitioners.id", ondelete="CASCADE"), primary_key=True
+    practitioner_id: int = Field(
+        foreign_key="practitioners.id", primary_key=True, ondelete="CASCADE"
     )
-    language_code: Mapped[str] = mapped_column(
-        String(LANGUAGE_CODE_LENGTH), primary_key=True
-    )
-    name: Mapped[str] = mapped_column(Text)
-    address: Mapped[str] = mapped_column(Text)
-    fee_detail: Mapped[str | None] = mapped_column(Text)
+    language_code: str = Field(max_length=LANGUAGE_CODE_LENGTH, primary_key=True)
+    name: str
+    address: str = Field(sa_type=Text)
+    fee_detail: str | None = Field(default=None, sa_type=Text)
 
-    practitioner: Mapped[Practitioner] = relationship(
-        back_populates="translations"
-    )
+    practitioner: Practitioner | None = Relationship(back_populates="translations")
 
 
-class OperatingHour(Base):
+class OperatingHour(SQLModel, table=True):
     """One open/close interval for a practitioner.
 
     day_of_week follows ISO 8601: 1 = Monday, 7 = Sunday.
@@ -148,14 +125,10 @@ class OperatingHour(Base):
         CheckConstraint("day_of_week BETWEEN 1 AND 7", name="ck_day_of_week"),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    practitioner_id: Mapped[int] = mapped_column(
-        ForeignKey("practitioners.id", ondelete="CASCADE")
-    )
-    day_of_week: Mapped[int] = mapped_column(Integer)
-    open_time: Mapped[time] = mapped_column(Time)
-    close_time: Mapped[time] = mapped_column(Time)
+    id: int | None = Field(default=None, primary_key=True)
+    practitioner_id: int = Field(foreign_key="practitioners.id", ondelete="CASCADE")
+    day_of_week: int
+    open_time: time
+    close_time: time
 
-    practitioner: Mapped[Practitioner] = relationship(
-        back_populates="operating_hours"
-    )
+    practitioner: Practitioner | None = Relationship(back_populates="operating_hours")

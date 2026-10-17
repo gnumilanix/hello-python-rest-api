@@ -7,16 +7,9 @@ detail responses include every translation.
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session
 
-from necktie.db import (
-    Category,
-    District,
-    OperatingHour,
-    Practitioner,
-    PractitionerTranslation,
-)
-from necktie.db.session import get_db
 from necktie.api.schemas import (
     CategoryRef,
     CategoryTranslated,
@@ -28,6 +21,14 @@ from necktie.api.schemas import (
     OpeningHourDetail,
     OpeningHourListItem,
 )
+from necktie.db import (
+    Category,
+    District,
+    OperatingHour,
+    Practitioner,
+    PractitionerTranslation,
+)
+from necktie.db.session import get_db
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
 

@@ -12,7 +12,7 @@ license = { text = "MIT" }
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
-    "sqlalchemy>=2.0",
+    "sqlmodel>=0.0.22",
     "psycopg[binary]>=3.1",
     "jetbase",
     "python-dotenv",
@@ -32,8 +32,10 @@ testpaths = ["tests"]
 addopts = "-v"
 
 [tool.ruff]
-target-version = "py36"
+target-version = "py37"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
+# B008: Depends() in argument defaults is the idiomatic FastAPI pattern.
 select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]
