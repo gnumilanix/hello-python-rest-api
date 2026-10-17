@@ -2,13 +2,12 @@
 
 from fastapi import APIRouter, Depends, Query
 
+from necktie.routers.constants import DEFAULT_LANGUAGE
 from necktie.routers.deps import get_district_service
 from necktie.schemas import District
 from necktie.services.district import DistrictService
 
 router = APIRouter(prefix="/district", tags=["district"])
-
-DEFAULT_LANGUAGE = "en-US"
 
 
 @router.get("", response_model=list[District])

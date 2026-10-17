@@ -7,6 +7,7 @@ handles HTTP concerns (params, status codes, error mapping).
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from necktie.routers.constants import DEFAULT_LANGUAGE
 from necktie.routers.deps import get_doctor_service
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services import (
@@ -17,8 +18,6 @@ from necktie.services import (
 )
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
-
-DEFAULT_LANGUAGE = "en-US"
 
 
 @router.get("", response_model=list[DoctorDetail])
