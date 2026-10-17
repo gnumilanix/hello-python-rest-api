@@ -80,7 +80,7 @@ class PractitionerService:
             category_id=payload.category_id,
             district_id=payload.district_id,
             place_id=payload.place_id,
-            phone_numbers=payload.phone_numbers or None,
+            phone_numbers=payload.phone_numbers,
             member_exclusive_fee=payload.member_exclusive_fee,
             consultation_fee=payload.consultation_fee,
             is_open_on_public_holidays=payload.is_open_on_public_holidays,

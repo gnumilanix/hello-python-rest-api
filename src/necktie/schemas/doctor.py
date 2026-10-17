@@ -24,9 +24,9 @@ class DoctorBase(BaseModel):
     """Shared doctor fields."""
 
     place_id: str | None = None
-    phone_numbers: list[str] = Field(default_factory=list)
+    phone_numbers: list[str] = Field(min_length=1)
     member_exclusive_fee: int | None = None
-    consultation_fee: int | None = None
+    consultation_fee: int
     is_open_on_public_holidays: bool = False
 
 
