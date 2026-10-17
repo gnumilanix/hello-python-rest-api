@@ -2,11 +2,11 @@
 
 from necktie.enums import DayOfWeek
 from necktie.models import OperatingHour
-from necktie.schemas import OperatingHourDetail, OperatingHourIn
+from necktie.schemas import OperatingHourCreate, OperatingHourDetail
 from necktie.schemas.operating_hour import OperatingHour as OperatingHourSchema
 
 
-def to_operating_hour_orm(oh: OperatingHourIn) -> OperatingHour:
+def to_operating_hour_orm(oh: OperatingHourCreate) -> OperatingHour:
     """Build an OperatingHour ORM object from create payload."""
     return OperatingHour(
         day_of_week=oh.day_of_week,

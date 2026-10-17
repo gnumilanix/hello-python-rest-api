@@ -1,31 +1,47 @@
-"""Pydantic schemas for the doctor endpoints, one class per module."""
+"""Pydantic schemas grouped per domain model."""
 
-from necktie.schemas.category import Category
-from necktie.schemas.category_ref import CategoryRef
-from necktie.schemas.category_translated import CategoryTranslated
-from necktie.schemas.district import District
-from necktie.schemas.district_ref import DistrictRef
-from necktie.schemas.district_translated import DistrictTranslated
-from necktie.schemas.doctor import Doctor
-from necktie.schemas.doctor_create import DoctorCreate
-from necktie.schemas.doctor_detail import DoctorDetail
-from necktie.schemas.doctor_translation_in import DoctorTranslationIn
-from necktie.schemas.operating_hour import OperatingHour
-from necktie.schemas.operating_hour_detail import OperatingHourDetail
-from necktie.schemas.operating_hour_in import OperatingHourIn
+from necktie.schemas.category import (
+    Category,
+    CategoryBase,
+    CategoryRef,
+    CategoryTranslated,
+)
+from necktie.schemas.district import (
+    District,
+    DistrictBase,
+    DistrictRef,
+    DistrictTranslated,
+)
+from necktie.schemas.doctor import (
+    Doctor,
+    DoctorBase,
+    DoctorCreate,
+    DoctorDetail,
+    DoctorTranslationCreate,
+)
+from necktie.schemas.operating_hour import (
+    OperatingHour,
+    OperatingHourBase,
+    OperatingHourCreate,
+    OperatingHourDetail,
+)
 
 __all__ = [
     "Category",
+    "CategoryBase",
     "CategoryRef",
     "CategoryTranslated",
     "District",
+    "DistrictBase",
     "DistrictRef",
     "DistrictTranslated",
     "Doctor",
+    "DoctorBase",
     "DoctorCreate",
     "DoctorDetail",
-    "DoctorTranslationIn",
+    "DoctorTranslationCreate",
     "OperatingHour",
+    "OperatingHourBase",
+    "OperatingHourCreate",
     "OperatingHourDetail",
-    "OperatingHourIn",
 ]
