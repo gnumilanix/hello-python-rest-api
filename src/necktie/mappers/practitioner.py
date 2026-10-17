@@ -1,6 +1,9 @@
 """Mappers between Practitioner ORM models and API schemas."""
 
-from necktie.enums import DayOfWeek
+from necktie.mappers.operating_hour import (
+    to_operating_hour,
+    to_operating_hour_detail,
+)
 from necktie.models import Practitioner
 from necktie.schemas import (
     CategoryRef,
@@ -9,8 +12,6 @@ from necktie.schemas import (
     DistrictTranslated,
     Doctor,
     DoctorDetail,
-    OperatingHour,
-    OperatingHourDetail,
 )
 
 
@@ -35,14 +36,7 @@ def to_doctor(p: Practitioner) -> Doctor:
         member_exclusive_fee=p.member_exclusive_fee,
         consultation_fee=p.consultation_fee,
         is_open_on_public_holidays=p.is_open_on_public_holidays,
-        operating_hours=[
-            OperatingHour(
-                day_of_week=DayOfWeek(oh.day_of_week).label,
-                open_time=oh.open_time,
-                close_time=oh.close_time,
-            )
-            for oh in p.operating_hours
-        ],
+        operating_hours=[to_operating_hour(oh) for oh in p.operating_hours],
     )
 
 
@@ -66,12 +60,5 @@ def to_detail(p: Practitioner) -> DoctorDetail:
         member_exclusive_fee=p.member_exclusive_fee,
         consultation_fee=p.consultation_fee,
         is_open_on_public_holidays=p.is_open_on_public_holidays,
-        operating_hours=[
-            OperatingHourDetail(
-                day_of_week=oh.day_of_week,
-                open_time=oh.open_time,
-                close_time=oh.close_time,
-            )
-            for oh in p.operating_hours
-        ],
+        operating_hours=[to_operating_hour_detail(oh) for oh in p.operating_hours],
     )
