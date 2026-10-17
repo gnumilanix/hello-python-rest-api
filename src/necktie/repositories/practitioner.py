@@ -1,0 +1,59 @@
+"""Data access for practitioners (the doctor resource)."""
+
+from collections.abc import Sequence
+
+from sqlalchemy import select
+from sqlmodel import Session
+
+from necktie.models import Category, District, Practitioner
+from necktie.routers.helpers import with_practitioner_relations
+
+
+class PractitionerRepository:
+    """CRUD queries for the practitioners table."""
+
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def find_all(
+        self,
+        district_id: int | None = None,
+        category_id: int | None = None,
+        min_fee: int | None = None,
+        max_fee: int | None = None,
+    ) -> Sequence[Practitioner]:
+        """Return practitioners matching the optional filters."""
+        stmt = with_practitioner_relations(select(Practitioner))
+        if district_id is not None:
+            stmt = stmt.where(Practitioner.district_id == district_id)
+        if category_id is not None:
+            stmt = stmt.where(Practitioner.category_id == category_id)
+        if min_fee is not None:
+            stmt = stmt.where(Practitioner.consultation_fee >= min_fee)
+        if max_fee is not None:
+            stmt = stmt.where(Practitioner.consultation_fee <= max_fee)
+        return self.db.scalars(stmt).all()
+
+    def find_by_id(self, practitioner_id: int) -> Practitioner | None:
+        """Return one practitioner with relationships, or None."""
+        stmt = with_practitioner_relations(
+            select(Practitioner).where(Practitioner.id == practitioner_id)
+        )
+        return self.db.scalars(stmt).first()
+
+    def add(self, practitioner: Practitioner) -> Practitioner:
+        """Stage a practitioner for insert."""
+        self.db.add(practitioner)
+        return practitioner
+
+    def category_exists(self, category_id: int) -> bool:
+        """Whether the category id is valid."""
+        return self.db.get(Category, category_id) is not None
+
+    def district_exists(self, district_id: int) -> bool:
+        """Whether the district id is valid."""
+        return self.db.get(District, district_id) is not None
+
+    def commit(self) -> None:
+        """Commit the current transaction."""
+        self.db.commit()
