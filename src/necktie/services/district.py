@@ -11,7 +11,7 @@ class DistrictService:
     def __init__(self, repository: DistrictRepository) -> None:
         self.repo = repository
 
-    def list_districts(self, language: str = "en-US") -> list[DistrictSchema]:
+    def list_districts(self, language: str) -> list[DistrictSchema]:
         """List districts localized to ``language``, ordered by sort_order."""
         items = []
         for d in self.repo.find_all():

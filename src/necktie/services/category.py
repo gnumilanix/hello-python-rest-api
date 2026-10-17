@@ -11,7 +11,7 @@ class CategoryService:
     def __init__(self, repository: CategoryRepository) -> None:
         self.repo = repository
 
-    def list_categories(self, language: str = "en-US") -> list[CategorySchema]:
+    def list_categories(self, language: str) -> list[CategorySchema]:
         """List categories localized to ``language``."""
         items = []
         for c in self.repo.find_all():

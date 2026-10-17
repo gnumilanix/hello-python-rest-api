@@ -17,12 +17,12 @@ class PractitionerRepository:
 
     def find_all(
         self,
-        district_id: int | None = None,
-        category_id: int | None = None,
-        min_fee: int | None = None,
-        max_fee: int | None = None,
-        offset: int = 0,
-        limit: int = 20,
+        district_id: int | None,
+        category_id: int | None,
+        min_fee: int | None,
+        max_fee: int | None,
+        offset: int,
+        limit: int,
     ) -> Sequence[Practitioner]:
         """Return practitioners matching the filters, paginated."""
         stmt = with_practitioner_relations(select(Practitioner))

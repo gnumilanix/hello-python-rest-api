@@ -26,13 +26,12 @@ class PractitionerService:
 
     def list_doctors(
         self,
-        district_id: int | None = None,
-        category_id: int | None = None,
-        min_fee: int | None = None,
-        max_fee: int | None = None,
-        language: str = "en-US",
-        offset: int = 0,
-        limit: int = 20,
+        district_id: int | None,
+        category_id: int | None,
+        min_fee: int | None,
+        max_fee: int | None,
+        offset: int,
+        limit: int,
     ) -> list[DoctorDetail]:
         """List doctors with all translations, paginated."""
         doctors = self.repo.find_all(
@@ -45,7 +44,7 @@ class PractitionerService:
         )
         return [to_detail(p) for p in doctors]
 
-    def get_doctor(self, doctor_id: int, language: str = "en-US") -> Doctor:
+    def get_doctor(self, doctor_id: int, language: str) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
         doctor = self.repo.find_by_id(doctor_id)
         if doctor is None:
