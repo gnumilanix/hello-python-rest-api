@@ -10,9 +10,9 @@ from necktie.schemas.doctor import Doctor
 from necktie.schemas.doctor_create import DoctorCreate
 from necktie.schemas.doctor_detail import DoctorDetail
 from necktie.schemas.doctor_translation_in import DoctorTranslationIn
-from necktie.schemas.opening_hour import OpeningHour
-from necktie.schemas.opening_hour_detail import OpeningHourDetail
-from necktie.schemas.opening_hour_in import OpeningHourIn
+from necktie.schemas.operating_hour import OperatingHour
+from necktie.schemas.operating_hour_detail import OperatingHourDetail
+from necktie.schemas.operating_hour_in import OperatingHourIn
 
 __all__ = [
     "Category",
@@ -25,7 +25,7 @@ __all__ = [
     "DoctorCreate",
     "DoctorDetail",
     "DoctorTranslationIn",
-    "OpeningHour",
-    "OpeningHourDetail",
-    "OpeningHourIn",
+    "OperatingHour",
+    "OperatingHourDetail",
+    "OperatingHourIn",
 ]

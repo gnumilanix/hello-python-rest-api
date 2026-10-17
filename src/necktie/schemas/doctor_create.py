@@ -3,7 +3,7 @@
 from pydantic import BaseModel, Field
 
 from necktie.schemas.doctor_translation_in import DoctorTranslationIn
-from necktie.schemas.opening_hour_in import OpeningHourIn
+from necktie.schemas.operating_hour_in import OperatingHourIn
 
 
 class DoctorCreate(BaseModel):
@@ -17,4 +17,4 @@ class DoctorCreate(BaseModel):
     consultation_fee: int | None = None
     is_open_on_public_holidays: bool = False
     translations: list[DoctorTranslationIn] = Field(min_length=1)
-    opening_hours: list[OpeningHourIn] = Field(default_factory=list)
+    operating_hours: list[OperatingHourIn] = Field(default_factory=list)

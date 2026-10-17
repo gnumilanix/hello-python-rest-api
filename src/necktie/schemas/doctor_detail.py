@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from necktie.schemas.category_translated import CategoryTranslated
 from necktie.schemas.district_translated import DistrictTranslated
-from necktie.schemas.opening_hour_detail import OpeningHourDetail
+from necktie.schemas.operating_hour_detail import OperatingHourDetail
 
 
 class DoctorDetail(BaseModel):
@@ -21,4 +21,4 @@ class DoctorDetail(BaseModel):
     member_exclusive_fee: int | None
     consultation_fee: int | None
     is_open_on_public_holidays: bool
-    opening_hours: list[OpeningHourDetail]
+    operating_hours: list[OperatingHourDetail]

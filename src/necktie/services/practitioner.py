@@ -98,6 +98,6 @@ class PractitionerService:
                     open_time=oh.open_time,
                     close_time=oh.close_time,
                 )
-                for oh in payload.opening_hours
+                for oh in payload.operating_hours
             ],
         )

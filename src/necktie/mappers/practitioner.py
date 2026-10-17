@@ -10,8 +10,8 @@ from necktie.schemas import (
     DistrictTranslated,
     Doctor,
     DoctorDetail,
-    OpeningHour,
-    OpeningHourDetail,
+    OperatingHour,
+    OperatingHourDetail,
 )
 
 
@@ -32,8 +32,8 @@ def to_doctor(p: Practitioner, language: str) -> Doctor:
         member_exclusive_fee=p.member_exclusive_fee,
         consultation_fee=p.consultation_fee,
         is_open_on_public_holidays=p.is_open_on_public_holidays,
-        opening_hours=[
-            OpeningHour(
+        operating_hours=[
+            OperatingHour(
                 day_of_week=DayOfWeek(oh.day_of_week).label,
                 open_time=oh.open_time,
                 close_time=oh.close_time,
@@ -63,8 +63,8 @@ def to_detail(p: Practitioner) -> DoctorDetail:
         member_exclusive_fee=p.member_exclusive_fee,
         consultation_fee=p.consultation_fee,
         is_open_on_public_holidays=p.is_open_on_public_holidays,
-        opening_hours=[
-            OpeningHourDetail(
+        operating_hours=[
+            OperatingHourDetail(
                 day_of_week=oh.day_of_week,
                 open_time=oh.open_time,
                 close_time=oh.close_time,
