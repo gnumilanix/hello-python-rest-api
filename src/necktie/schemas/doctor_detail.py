@@ -13,7 +13,9 @@ class DoctorDetail(BaseModel):
     id: int
     category: CategoryTranslated
     district: DistrictTranslated
+    name: dict[str, str]
     address: dict[str, str]
+    fee_detail: dict[str, str | None]
     place_id: str | None
     phone_numbers: list[str]
     member_exclusive_fee: int | None

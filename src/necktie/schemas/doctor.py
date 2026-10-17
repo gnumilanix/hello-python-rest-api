@@ -13,7 +13,9 @@ class Doctor(BaseModel):
     id: int
     category: CategoryRef
     district: DistrictRef
+    name: str
     address: str
+    fee_detail: str | None
     place_id: str | None
     phone_numbers: list[str]
     member_exclusive_fee: int | None
