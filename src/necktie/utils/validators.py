@@ -26,6 +26,21 @@ def validate_phone_numbers(
     return numbers
 
 
+def _validate_default_phone_numbers(numbers: list[str]) -> list[str]:
+    """Validate numbers against the default region."""
+    return validate_phone_numbers(numbers, region=DEFAULT_PHONE_REGION)
+
+
+DefaultPhoneList = Annotated[
+    list[str],
+    Field(
+        min_length=1,
+        description=f"List of validated {DEFAULT_PHONE_REGION} phone numbers",
+    ),
+    AfterValidator(_validate_default_phone_numbers),
+]
+
+
 def PhoneList(region: str = DEFAULT_PHONE_REGION) -> Any:
     """Return a self-validating phone-number list type for ``region``.
 

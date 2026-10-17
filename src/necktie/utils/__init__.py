@@ -3,6 +3,7 @@
 from necktie.utils.constants import DEFAULT_PHONE_REGION, LANGUAGE_CODE_LENGTH
 from necktie.utils.enums import DayOfWeek
 from necktie.utils.validators import (
+    DefaultPhoneList,
     LanguageCode,
     PhoneList,
     validate_language_code,
@@ -12,6 +13,7 @@ from necktie.utils.validators import (
 __all__ = [
     "DEFAULT_PHONE_REGION",
     "DayOfWeek",
+    "DefaultPhoneList",
     "LANGUAGE_CODE_LENGTH",
     "LanguageCode",
     "PhoneList",

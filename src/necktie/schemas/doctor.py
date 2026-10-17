@@ -9,7 +9,7 @@ from necktie.schemas.operating_hour import (
     OperatingHourCreate,
     OperatingHourDetail,
 )
-from necktie.utils import LanguageCode, PhoneList
+from necktie.utils import DefaultPhoneList, LanguageCode
 
 
 class DoctorTranslationCreate(BaseModel):
@@ -25,7 +25,7 @@ class DoctorBase(BaseModel):
     """Shared doctor fields."""
 
     place_id: str | None = None
-    phone_numbers: PhoneList()
+    phone_numbers: list[str] = Field(min_length=1)
     member_exclusive_fee: int | None = None
     consultation_fee: int
     is_open_on_public_holidays: bool = False
@@ -60,5 +60,7 @@ class DoctorCreate(DoctorBase):
 
     category_id: int
     district_id: int
+    # Phone numbers are validated (HK region) only on create, not on reads.
+    phone_numbers: DefaultPhoneList
     translations: list[DoctorTranslationCreate] = Field(min_length=1)
     operating_hours: list[OperatingHourCreate] = Field(default_factory=list)
