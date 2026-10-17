@@ -13,7 +13,6 @@ class DoctorCreate(BaseModel):
     district_id: int
     place_id: str | None = None
     phone_numbers: list[str] = Field(default_factory=list)
-    is_active: bool = True
     member_exclusive_fee: int | None = None
     consultation_fee: int | None = None
     is_open_on_public_holidays: bool = False

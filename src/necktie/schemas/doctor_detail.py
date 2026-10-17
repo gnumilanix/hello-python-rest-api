@@ -16,7 +16,6 @@ class DoctorDetail(BaseModel):
     address: dict[str, str]
     place_id: str | None
     phone_numbers: list[str]
-    is_active: bool
     member_exclusive_fee: int | None
     consultation_fee: int | None
     is_open_on_public_holidays: bool

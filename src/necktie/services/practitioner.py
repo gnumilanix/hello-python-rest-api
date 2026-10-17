@@ -80,7 +80,6 @@ class PractitionerService:
             district_id=payload.district_id,
             place_id=payload.place_id,
             phone_numbers=", ".join(payload.phone_numbers) or None,
-            is_active=payload.is_active,
             member_exclusive_fee=payload.member_exclusive_fee,
             consultation_fee=payload.consultation_fee,
             is_open_on_public_holidays=payload.is_open_on_public_holidays,

@@ -24,7 +24,7 @@ class PractitionerRepository:
         offset: int = 0,
         limit: int = 20,
     ) -> Sequence[Practitioner]:
-        """Return practitioners matching the optional filters, paginated."""
+        """Return practitioners matching the filters, paginated."""
         stmt = with_practitioner_relations(select(Practitioner))
         if district_id is not None:
             stmt = stmt.where(Practitioner.district_id == district_id)
