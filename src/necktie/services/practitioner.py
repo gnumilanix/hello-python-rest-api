@@ -1,7 +1,12 @@
 """Business logic for the doctor resource."""
 
-from necktie.mappers import to_detail, to_doctor
-from necktie.models import OperatingHour, Practitioner, PractitionerTranslation
+from necktie.mappers import (
+    to_detail,
+    to_doctor,
+    to_operating_hour_orm,
+    to_translation_orm,
+)
+from necktie.models import Practitioner
 from necktie.repositories import PractitionerRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 
@@ -46,15 +51,14 @@ class PractitionerService:
 
     def get_doctor(self, doctor_id: int, language: str) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
-        doctor = self.repo.find_by_id(doctor_id)
+        doctor = self.repo.find_by_id_localized(doctor_id, language)
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
         return to_doctor(doctor, language)
 
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""
-        doctor = self._build(payload)
-        self.repo.add(doctor)
+        doctor = self.repo.add_all([self._build(payload)])[0]
         self.repo.commit()
         return to_detail(doctor)
 
@@ -62,9 +66,7 @@ class PractitionerService:
         self, payloads: list[DoctorCreate]
     ) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
-        doctors = [self._build(p) for p in payloads]
-        for d in doctors:
-            self.repo.add(d)
+        doctors = self.repo.add_all([self._build(p) for p in payloads])
         self.repo.commit()
         return [to_detail(d) for d in doctors]
 
@@ -82,21 +84,8 @@ class PractitionerService:
             member_exclusive_fee=payload.member_exclusive_fee,
             consultation_fee=payload.consultation_fee,
             is_open_on_public_holidays=payload.is_open_on_public_holidays,
-            translations=[
-                PractitionerTranslation(
-                    language_code=t.language_code,
-                    name=t.name,
-                    address=t.address,
-                    fee_detail=t.fee_detail,
-                )
-                for t in payload.translations
-            ],
+            translations=[to_translation_orm(t) for t in payload.translations],
             operating_hours=[
-                OperatingHour(
-                    day_of_week=oh.day_of_week,
-                    open_time=oh.open_time,
-                    close_time=oh.close_time,
-                )
-                for oh in payload.operating_hours
+                to_operating_hour_orm(oh) for oh in payload.operating_hours
             ],
         )

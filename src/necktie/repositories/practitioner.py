@@ -1,12 +1,15 @@
 """Data access for practitioners (the doctor resource)."""
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 
 from sqlalchemy import select
 from sqlmodel import Session
 
 from necktie.models import Category, District, Practitioner
-from necktie.routers.helpers import with_practitioner_relations
+from necktie.routers.helpers import (
+    with_localized_relations,
+    with_practitioner_relations,
+)
 
 
 class PractitionerRepository:
@@ -38,16 +41,29 @@ class PractitionerRepository:
         return self.db.scalars(stmt).all()
 
     def find_by_id(self, practitioner_id: int) -> Practitioner | None:
-        """Return one practitioner with relationships, or None."""
+        """Return one practitioner with all relationships, or None."""
         stmt = with_practitioner_relations(
             select(Practitioner).where(Practitioner.id == practitioner_id)
         )
         return self.db.scalars(stmt).first()
 
-    def add(self, practitioner: Practitioner) -> Practitioner:
-        """Stage a practitioner for insert."""
-        self.db.add(practitioner)
-        return practitioner
+    def find_by_id_localized(
+        self, practitioner_id: int, language: str
+    ) -> Practitioner | None:
+        """Return one practitioner loading only ``language`` translations."""
+        stmt = with_localized_relations(
+            select(Practitioner).where(Practitioner.id == practitioner_id),
+            language,
+        )
+        return self.db.scalars(stmt).first()
+
+    def add_all(
+        self, practitioners: Iterable[Practitioner]
+    ) -> Sequence[Practitioner]:
+        """Stage practitioners for insert."""
+        items = list(practitioners)
+        self.db.add_all(items)
+        return items
 
     def category_exists(self, category_id: int) -> bool:
         """Whether the category id is valid."""
