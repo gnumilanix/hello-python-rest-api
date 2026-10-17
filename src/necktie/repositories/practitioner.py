@@ -2,7 +2,7 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlmodel import Session
 
 from necktie.models import Category, District, Practitioner
@@ -63,11 +63,15 @@ class PractitionerRepository:
 
     def category_exists(self, category_id: int) -> bool:
         """Whether the category id is valid."""
-        return self.db.get(Category, category_id) is not None
+        return self.db.scalar(
+            select(exists().where(Category.id == category_id))
+        )
 
     def district_exists(self, district_id: int) -> bool:
         """Whether the district id is valid."""
-        return self.db.get(District, district_id) is not None
+        return self.db.scalar(
+            select(exists().where(District.id == district_id))
+        )
 
     def commit(self) -> None:
         """Commit the current transaction."""
