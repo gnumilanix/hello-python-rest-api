@@ -40,13 +40,6 @@ class PractitionerRepository:
         stmt = stmt.order_by(Practitioner.id).offset(offset).limit(limit)
         return self.db.scalars(stmt).all()
 
-    def find_by_id(self, practitioner_id: int) -> Practitioner | None:
-        """Return one practitioner with all relationships, or None."""
-        stmt = with_practitioner_relations(
-            select(Practitioner).where(Practitioner.id == practitioner_id)
-        )
-        return self.db.scalars(stmt).first()
-
     def find_by_id_localized(
         self, practitioner_id: int, language: str
     ) -> Practitioner | None:
