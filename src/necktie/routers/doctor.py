@@ -6,10 +6,8 @@ handles HTTP concerns (params, status codes, error mapping).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlmodel import Session
 
-from necktie.db.session import get_db
-from necktie.repositories import PractitionerRepository
+from necktie.routers.deps import get_doctor_service
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services import (
     CategoryNotFoundError,
@@ -23,11 +21,6 @@ router = APIRouter(prefix="/doctor", tags=["doctor"])
 DEFAULT_LANGUAGE = "en-US"
 
 
-def get_service(db: Session = Depends(get_db)) -> PractitionerService:
-    """Build the service with its repository for this request."""
-    return PractitionerService(PractitionerRepository(db))
-
-
 @router.get("", response_model=list[DoctorDetail])
 def list_doctors(
     district: int | None = Query(None, description="District id"),
@@ -36,7 +29,7 @@ def list_doctors(
     max_fee: int | None = Query(None, ge=0, description="Max consultation fee"),
     page: int = Query(0, ge=0, description="Page number (0-based)"),
     size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
-    service: PractitionerService = Depends(get_service),
+    service: PractitionerService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """List doctors with all translations, filterable and paginated."""
     return service.list_doctors(
@@ -53,7 +46,7 @@ def list_doctors(
 def get_doctor(
     doctor_id: int,
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
-    service: PractitionerService = Depends(get_service),
+    service: PractitionerService = Depends(get_doctor_service),
 ) -> Doctor:
     """Get one doctor localized to ``language``."""
     try:
@@ -64,7 +57,7 @@ def get_doctor(
 
 @router.post("", response_model=DoctorDetail, status_code=status.HTTP_201_CREATED)
 def create_doctor(
-    payload: DoctorCreate, service: PractitionerService = Depends(get_service)
+    payload: DoctorCreate, service: PractitionerService = Depends(get_doctor_service)
 ) -> DoctorDetail:
     """Create a single doctor."""
     try:
@@ -79,7 +72,8 @@ def create_doctor(
     status_code=status.HTTP_201_CREATED,
 )
 def create_doctors_batch(
-    payload: list[DoctorCreate], service: PractitionerService = Depends(get_service)
+    payload: list[DoctorCreate],
+    service: PractitionerService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """Create multiple doctors in one transaction."""
     try:
