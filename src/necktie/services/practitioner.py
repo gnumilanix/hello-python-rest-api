@@ -9,7 +9,6 @@ from necktie.mappers import (
 from necktie.models import Practitioner
 from necktie.repositories import PractitionerRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
-from necktie.utils.cache import cached, flushes_cache
 
 
 class PractitionerNotFoundError(Exception):
@@ -30,7 +29,6 @@ class PractitionerService:
     def __init__(self, repository: PractitionerRepository) -> None:
         self.repo = repository
 
-    @cached("doctors")
     def list_doctors(
         self,
         district_id: int | None,
@@ -51,7 +49,6 @@ class PractitionerService:
         )
         return [to_detail(p) for p in doctors]
 
-    @cached("doctor")
     def get_doctor(self, doctor_id: int, language: str) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
         doctor = self.repo.find_by_id_localized(doctor_id, language)
@@ -59,7 +56,6 @@ class PractitionerService:
             raise PractitionerNotFoundError(doctor_id)
         return to_doctor(doctor)
 
-    @flushes_cache
     def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""
         doctor = self._build(payload)
@@ -67,7 +63,6 @@ class PractitionerService:
         self.repo.commit()
         return to_detail(doctor)
 
-    @flushes_cache
     def create_doctors_batch(self, payloads: list[DoctorCreate]) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
         doctors = [self._build(p) for p in payloads]

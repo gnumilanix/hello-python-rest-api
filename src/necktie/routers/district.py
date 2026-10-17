@@ -1,6 +1,7 @@
 """District endpoints."""
 
 from fastapi import APIRouter, Depends, Query
+from fastapi_cache.decorator import cache
 
 from necktie.routers.constants import DEFAULT_LANGUAGE
 from necktie.routers.deps import get_district_service
@@ -11,6 +12,7 @@ router = APIRouter(prefix="/district", tags=["district"])
 
 
 @router.get("", response_model=list[District])
+@cache(namespace="district")
 def list_districts(
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
     service: DistrictService = Depends(get_district_service),

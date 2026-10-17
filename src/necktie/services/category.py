@@ -3,7 +3,6 @@
 from necktie.mappers import to_category
 from necktie.repositories.category import CategoryRepository
 from necktie.schemas import Category as CategorySchema
-from necktie.utils.cache import cached
 
 
 class CategoryService:
@@ -12,7 +11,6 @@ class CategoryService:
     def __init__(self, repository: CategoryRepository) -> None:
         self.repo = repository
 
-    @cached("categories")
     def list_categories(self, language: str) -> list[CategorySchema]:
         """List categories localized to ``language``."""
         return [to_category(c) for c in self.repo.find_all_localized(language)]

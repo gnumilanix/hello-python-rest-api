@@ -6,6 +6,9 @@ handles HTTP concerns (params, status codes, error mapping).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.concurrency import run_in_threadpool
+from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 
 from necktie.routers.constants import DEFAULT_LANGUAGE
 from necktie.routers.deps import get_doctor_service
@@ -21,6 +24,7 @@ router = APIRouter(prefix="/doctor", tags=["doctor"])
 
 
 @router.get("", response_model=list[DoctorDetail])
+@cache(namespace="doctor")
 def list_doctors(
     district: int | None = Query(None, description="District id"),
     category: int | None = Query(None, description="Category id"),
@@ -42,6 +46,7 @@ def list_doctors(
 
 
 @router.get("/{doctor_id}", response_model=Doctor)
+@cache(namespace="doctor")
 def get_doctor(
     doctor_id: int,
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
@@ -55,14 +60,16 @@ def get_doctor(
 
 
 @router.post("", response_model=DoctorDetail, status_code=status.HTTP_201_CREATED)
-def create_doctor(
+async def create_doctor(
     payload: DoctorCreate, service: PractitionerService = Depends(get_doctor_service)
 ) -> DoctorDetail:
     """Create a single doctor."""
     try:
-        return service.create_doctor(payload)
+        result = await run_in_threadpool(service.create_doctor, payload)
     except (CategoryNotFoundError, DistrictNotFoundError) as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e)) from None
+    await FastAPICache.clear(namespace="doctor")
+    return result
 
 
 @router.post(
@@ -70,12 +77,14 @@ def create_doctor(
     response_model=list[DoctorDetail],
     status_code=status.HTTP_201_CREATED,
 )
-def create_doctors_batch(
+async def create_doctors_batch(
     payload: list[DoctorCreate],
     service: PractitionerService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """Create multiple doctors in one transaction."""
     try:
-        return service.create_doctors_batch(payload)
+        result = await run_in_threadpool(service.create_doctors_batch, payload)
     except (CategoryNotFoundError, DistrictNotFoundError) as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e)) from None
+    await FastAPICache.clear(namespace="doctor")
+    return result
