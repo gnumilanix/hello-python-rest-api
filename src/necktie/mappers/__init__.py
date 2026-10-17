@@ -1,6 +1,5 @@
 """Mappers between ORM models and API schemas, one module per source class."""
 
-from necktie.enums import DayOfWeek
 from necktie.mappers.category import to_category
 from necktie.mappers.district import to_district
 from necktie.mappers.operating_hour import (
@@ -10,6 +9,7 @@ from necktie.mappers.operating_hour import (
 )
 from necktie.mappers.practitioner import to_detail, to_doctor
 from necktie.mappers.practitioner_translation import to_translation_orm
+from necktie.utils import DayOfWeek
 
 __all__ = [
     "DayOfWeek",

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Text
 from sqlmodel import Field, Relationship, SQLModel
 
-from necktie.models.constants import LANGUAGE_CODE_LENGTH
+from necktie.utils.constants import LANGUAGE_CODE_LENGTH
 
 if TYPE_CHECKING:
     from necktie.models.practitioner import Practitioner

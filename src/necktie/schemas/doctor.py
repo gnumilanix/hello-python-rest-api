@@ -9,7 +9,7 @@ from necktie.schemas.operating_hour import (
     OperatingHourCreate,
     OperatingHourDetail,
 )
-from necktie.validators import PhoneList
+from necktie.utils import PhoneList
 
 
 class DoctorTranslationCreate(BaseModel):

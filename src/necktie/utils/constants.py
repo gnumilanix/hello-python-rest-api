@@ -1,4 +1,4 @@
-"""Shared model constants."""
+"""Shared cross-cutting constants."""
 
 LANGUAGE_CODE_LENGTH = 10
 

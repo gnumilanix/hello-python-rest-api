@@ -1,9 +1,9 @@
 """Mappers for operating hours."""
 
-from necktie.enums import DayOfWeek
 from necktie.models import OperatingHour
 from necktie.schemas import OperatingHourCreate, OperatingHourDetail
 from necktie.schemas.operating_hour import OperatingHour as OperatingHourSchema
+from necktie.utils import DayOfWeek
 
 
 def to_operating_hour_orm(oh: OperatingHourCreate) -> OperatingHour:

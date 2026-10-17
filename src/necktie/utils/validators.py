@@ -5,7 +5,7 @@ from typing import Annotated, Any
 import phonenumbers
 from pydantic import AfterValidator, Field
 
-from necktie.models.constants import DEFAULT_PHONE_REGION
+from necktie.utils.constants import DEFAULT_PHONE_REGION
 
 
 def validate_phone_numbers(

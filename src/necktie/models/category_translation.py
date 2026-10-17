@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 
-from necktie.models.constants import LANGUAGE_CODE_LENGTH
+from necktie.utils.constants import LANGUAGE_CODE_LENGTH
 
 if TYPE_CHECKING:
     from necktie.models.category import Category
