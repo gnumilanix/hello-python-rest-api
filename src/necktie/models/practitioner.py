@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -25,8 +27,9 @@ class Practitioner(SQLModel, table=True):
     category_id: int = Field(foreign_key="category.id")
     district_id: int = Field(foreign_key="district.id")
     place_id: str | None = None  # Google Places ID
-    # Comma-separated in the DB; use ``phone_number_list`` for a list view.
-    phone_numbers: str | None = None
+    phone_numbers: list[str] | None = Field(
+        default=None, sa_column=Column(JSONB)
+    )
     member_exclusive_fee: int | None = None
     consultation_fee: int | None = None
     # HK clinics either open or close on public holidays as a whole,
@@ -41,10 +44,3 @@ class Practitioner(SQLModel, table=True):
     operating_hours: list["OperatingHour"] = Relationship(
         back_populates="practitioner", cascade_delete=True
     )
-
-    @property
-    def phone_number_list(self) -> list[str]:
-        """Return phone numbers as a list (stored comma-separated)."""
-        if not self.phone_numbers:
-            return []
-        return [p.strip() for p in self.phone_numbers.split(",") if p.strip()]
