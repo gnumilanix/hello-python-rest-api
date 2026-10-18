@@ -6,8 +6,10 @@ from tests.conftest import DOCTOR_PAYLOAD
 
 
 class TestListDoctors:
+    SIZE = 100  # large enough to include doctors created in earlier runs
+
     def test_default_language(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get("/doctor", params={"size": 10})
+        response = client.get("/doctor", params={"size": self.SIZE})
         assert response.status_code == 200
         doctors = response.json()
         assert any(d["id"] == doctor_id for d in doctors)
@@ -16,34 +18,42 @@ class TestListDoctors:
         assert doctor["district"]["name"] == "Central and Western"
 
     def test_localized_cantonese(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get("/doctor", params={"language": "yue", "size": 10})
+        response = client.get(
+            "/doctor", params={"language": "yue", "size": self.SIZE}
+        )
         assert response.status_code == 200
         doctor = next(d for d in response.json() if d["id"] == doctor_id)
         assert doctor["name"] == "測試醫生"
         assert doctor["district"]["name"] == "中西區"
 
     def test_localized_mandarin(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get("/doctor", params={"language": "zh", "size": 10})
+        response = client.get(
+            "/doctor", params={"language": "zh", "size": self.SIZE}
+        )
         assert response.status_code == 200
         doctor = next(d for d in response.json() if d["id"] == doctor_id)
         assert doctor["name"] == "测试医生"
 
     def test_filter_by_district(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get("/doctor", params={"district": 1, "size": 10})
+        response = client.get(
+            "/doctor", params={"district": 1, "size": self.SIZE}
+        )
         assert response.status_code == 200
         assert any(d["id"] == doctor_id for d in response.json())
         # A district with no doctors returns empty.
-        response = client.get("/doctor", params={"district": 18, "size": 10})
+        response = client.get(
+            "/doctor", params={"district": 18, "size": self.SIZE}
+        )
         assert response.status_code == 200
         assert not any(d["id"] == doctor_id for d in response.json())
 
     def test_filter_by_fee_range(self, client: TestClient, doctor_id: int) -> None:
         response = client.get(
-            "/doctor", params={"min_fee": 100, "max_fee": 500, "size": 10}
+            "/doctor", params={"min_fee": 100, "max_fee": 500, "size": self.SIZE}
         )
         assert response.status_code == 200
         assert any(d["id"] == doctor_id for d in response.json())
-        response = client.get("/doctor", params={"min_fee": 9999, "size": 10})
+        response = client.get("/doctor", params={"min_fee": 9999, "size": self.SIZE})
         assert not any(d["id"] == doctor_id for d in response.json())
 
     def test_pagination(self, client: TestClient, doctor_id: int) -> None:

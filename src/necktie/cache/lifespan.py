@@ -30,7 +30,10 @@ def request_key_builder(
     """Key from request path + sorted query params (ignores injected deps)."""
     if request is None:
         raise ValueError("request is required for cache key building")
-    items = "&".join(f"{k}={v}" for k, v in sorted(request.query_params.items()))
+    # multi_items() preserves repeated params (e.g. ?lang=en&lang=zh).
+    items = "&".join(
+        f"{k}={v}" for k, v in sorted(request.query_params.multi_items())
+    )
     return f"{namespace}:{request.url.path}?{items}"
 
 
