@@ -169,6 +169,7 @@ jobs:
     needs: [build]
     permissions:
       contents: read
+      packages: read
       security-events: write
     steps:
       - uses: actions/checkout@v7
