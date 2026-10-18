@@ -14,9 +14,9 @@ from necktie.services.category import CategoryService
 from necktie.services.district import DistrictService
 
 
-def get_doctor_service(db: Session = Depends(get_db)) -> PractitionerService:
-    """Build the practitioner service with its repository."""
-    return PractitionerService(PractitionerRepository(db))
+def get_district_service(db: Session = Depends(get_db)) -> DistrictService:
+    """Build the district service with its repository."""
+    return DistrictService(DistrictRepository(db))
 
 
 def get_category_service(db: Session = Depends(get_db)) -> CategoryService:
@@ -24,6 +24,10 @@ def get_category_service(db: Session = Depends(get_db)) -> CategoryService:
     return CategoryService(CategoryRepository(db))
 
 
-def get_district_service(db: Session = Depends(get_db)) -> DistrictService:
-    """Build the district service with its repository."""
-    return DistrictService(DistrictRepository(db))
+def get_doctor_service(
+    db: Session = Depends(get_db),
+    districts: DistrictService = Depends(get_district_service),
+    categories: CategoryService = Depends(get_category_service),
+) -> PractitionerService:
+    """Build the practitioner service with its repository and catalog services."""
+    return PractitionerService(PractitionerRepository(db), districts, categories)

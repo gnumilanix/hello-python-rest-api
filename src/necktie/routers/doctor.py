@@ -6,11 +6,9 @@ handles HTTP concerns (params, status codes, error mapping).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.concurrency import run_in_threadpool
 from fastapi_cache import FastAPICache
 from fastapi_cache.decorator import cache
 
-from necktie.routers.constants import DEFAULT_LANGUAGE
 from necktie.routers.deps import get_doctor_service
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services import (
@@ -19,13 +17,14 @@ from necktie.services import (
     PractitionerNotFoundError,
     PractitionerService,
 )
+from necktie.utils.constants import DEFAULT_LANGUAGE
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
 
 
 @router.get("", response_model=list[DoctorDetail])
 @cache(namespace="doctor")
-def list_doctors(
+async def list_doctors(
     district: int | None = Query(None, description="District id"),
     category: int | None = Query(None, description="Category id"),
     min_fee: int | None = Query(None, ge=0, description="Min consultation fee"),
@@ -35,7 +34,7 @@ def list_doctors(
     service: PractitionerService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """List doctors with all translations, filterable and paginated."""
-    return service.list_doctors(
+    return await service.list_doctors(
         district_id=district,
         category_id=category,
         min_fee=min_fee,
@@ -47,14 +46,14 @@ def list_doctors(
 
 @router.get("/{doctor_id}", response_model=Doctor)
 @cache(namespace="doctor")
-def get_doctor(
+async def get_doctor(
     doctor_id: int,
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
     service: PractitionerService = Depends(get_doctor_service),
 ) -> Doctor:
     """Get one doctor localized to ``language``."""
     try:
-        return service.get_doctor(doctor_id, language=language)
+        return await service.get_doctor(doctor_id, language=language)
     except PractitionerNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
 
@@ -65,7 +64,7 @@ async def create_doctor(
 ) -> DoctorDetail:
     """Create a single doctor."""
     try:
-        result = await run_in_threadpool(service.create_doctor, payload)
+        result = await service.create_doctor(payload)
     except (CategoryNotFoundError, DistrictNotFoundError) as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e)) from None
     await FastAPICache.clear(namespace="doctor")
@@ -83,7 +82,7 @@ async def create_doctors_batch(
 ) -> list[DoctorDetail]:
     """Create multiple doctors in one transaction."""
     try:
-        result = await run_in_threadpool(service.create_doctors_batch, payload)
+        result = await service.create_doctors_batch(payload)
     except (CategoryNotFoundError, DistrictNotFoundError) as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e)) from None
     await FastAPICache.clear(namespace="doctor")

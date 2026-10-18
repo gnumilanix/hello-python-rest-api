@@ -2,14 +2,7 @@
 
 from sqlalchemy.orm import selectinload, with_loader_criteria
 
-from necktie.models import (
-    Category,
-    CategoryTranslation,
-    District,
-    DistrictTranslation,
-    Practitioner,
-    PractitionerTranslation,
-)
+from necktie.models import Practitioner, PractitionerTranslation
 
 
 def with_practitioner_relations(stmt):
@@ -17,8 +10,6 @@ def with_practitioner_relations(stmt):
     return stmt.options(
         selectinload(Practitioner.translations),
         selectinload(Practitioner.operating_hours),
-        selectinload(Practitioner.category).selectinload(Category.translations),
-        selectinload(Practitioner.district).selectinload(District.translations),
     )
 
 
@@ -31,16 +22,8 @@ def with_localized_relations(stmt, language: str):
     return stmt.options(
         selectinload(Practitioner.translations),
         selectinload(Practitioner.operating_hours),
-        selectinload(Practitioner.category).selectinload(Category.translations),
-        selectinload(Practitioner.district).selectinload(District.translations),
         with_loader_criteria(
             PractitionerTranslation,
             PractitionerTranslation.language_code == language,
-        ),
-        with_loader_criteria(
-            CategoryTranslation, CategoryTranslation.language_code == language
-        ),
-        with_loader_criteria(
-            DistrictTranslation, DistrictTranslation.language_code == language
         ),
     )
