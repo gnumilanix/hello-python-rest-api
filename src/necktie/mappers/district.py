@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from necktie.models import District
 from necktie.schemas import District as DistrictSchema
-from necktie.schemas.district import DistrictNames
+from necktie.schemas.locale import LocaleModel
 from necktie.utils.languages import Language
 
 
@@ -17,9 +17,9 @@ class DistrictCatalogEntry(BaseModel):
     name_yue: str
     name_zh: str
 
-    def names(self) -> DistrictNames:
+    def names(self) -> LocaleModel:
         """The names as an API schema object."""
-        return DistrictNames(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
+        return LocaleModel(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
 
 
 def to_district_catalog_entry(d: District) -> DistrictCatalogEntry:

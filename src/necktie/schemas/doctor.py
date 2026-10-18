@@ -4,28 +4,13 @@ from pydantic import BaseModel, Field
 
 from necktie.schemas.category import CategoryRef, CategoryTranslated
 from necktie.schemas.district import DistrictRef, DistrictTranslated
+from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.schemas.operating_hour import (
     OperatingHour,
     OperatingHourCreate,
     OperatingHourDetail,
 )
 from necktie.utils import DefaultPhoneList
-
-
-class DoctorText(BaseModel):
-    """Required translatable text: every supported language present."""
-
-    en: str
-    yue: str
-    zh: str
-
-
-class DoctorTextOptional(BaseModel):
-    """Optional translatable text (e.g. fee_detail): every field may be absent."""
-
-    en: str | None = None
-    yue: str | None = None
-    zh: str | None = None
 
 
 class DoctorBase(BaseModel):
@@ -56,9 +41,9 @@ class DoctorDetail(DoctorBase):
     id: int
     category: CategoryTranslated
     district: DistrictTranslated
-    name: DoctorText
-    address: DoctorText
-    fee_detail: DoctorTextOptional
+    name: LocaleModel
+    address: LocaleModel
+    fee_detail: NullableLocaleModel
     operating_hours: list[OperatingHourDetail]
 
 
@@ -68,7 +53,9 @@ class DoctorCreate(DoctorBase):
     category_id: int
     district_id: int
     phone_numbers: DefaultPhoneList
-    name: DoctorText
-    address: DoctorText
-    fee_detail: DoctorTextOptional = Field(default_factory=DoctorTextOptional)
+    name: LocaleModel
+    address: LocaleModel
+    fee_detail: NullableLocaleModel = Field(
+        default_factory=NullableLocaleModel
+    )
     operating_hours: list[OperatingHourCreate] = Field(default_factory=list)

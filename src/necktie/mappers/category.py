@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from necktie.models import Category
 from necktie.schemas import Category as CategorySchema
-from necktie.schemas.category import CategoryNames
+from necktie.schemas.locale import LocaleModel
 from necktie.utils.languages import Language
 
 
@@ -17,9 +17,9 @@ class CategoryCatalogEntry(BaseModel):
     name_yue: str
     name_zh: str
 
-    def names(self) -> CategoryNames:
+    def names(self) -> LocaleModel:
         """The names as an API schema object."""
-        return CategoryNames(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
+        return LocaleModel(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
 
 
 def to_category_catalog_entry(c: Category) -> CategoryCatalogEntry:

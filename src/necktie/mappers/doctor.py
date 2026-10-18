@@ -17,9 +17,8 @@ from necktie.schemas import (
     DistrictTranslated,
     Doctor,
     DoctorDetail,
-    DoctorText,
-    DoctorTextOptional,
 )
+from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.utils.languages import Language
 
 if TYPE_CHECKING:
@@ -122,9 +121,11 @@ class DoctorMapper:
             id=p.id,
             category=CategoryTranslated(id=cat.id, name=cat.names()),
             district=DistrictTranslated(id=dist.id, name=dist.names()),
-            name=DoctorText(en=p.name_en, yue=p.name_yue, zh=p.name_zh),
-            address=DoctorText(en=p.address_en, yue=p.address_yue, zh=p.address_zh),
-            fee_detail=DoctorTextOptional(
+            name=LocaleModel(en=p.name_en, yue=p.name_yue, zh=p.name_zh),
+            address=LocaleModel(
+                en=p.address_en, yue=p.address_yue, zh=p.address_zh
+            ),
+            fee_detail=NullableLocaleModel(
                 en=p.fee_detail_en, yue=p.fee_detail_yue, zh=p.fee_detail_zh
             ),
             place_id=p.place_id,

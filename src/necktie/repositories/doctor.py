@@ -7,6 +7,7 @@ from sqlmodel import Session, select
 
 from necktie.models import Doctor
 
+
 class DoctorRepository:
     """CRUD queries for the doctors table."""
 
