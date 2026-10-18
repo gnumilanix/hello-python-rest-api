@@ -10,7 +10,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.decorator import cache
 
 from necktie.routers.deps import get_doctor_service
-from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
+from necktie.schemas import Doctor, DoctorCreate
 from necktie.services import (
     CategoryNotFoundError,
     DistrictNotFoundError,
@@ -22,9 +22,10 @@ from necktie.utils.languages import Language
 router = APIRouter(prefix="/doctor", tags=["doctor"])
 
 
-@router.get("", response_model=list[DoctorDetail])
+@router.get("", response_model=list[Doctor])
 @cache(namespace="doctor")
 async def list_doctors(
+    language: Language = Query(Language.default(), description="Response language"),
     district: int | None = Query(None, description="District id"),
     category: int | None = Query(None, description="Category id"),
     min_fee: int | None = Query(None, ge=0, description="Min consultation fee"),
@@ -32,9 +33,10 @@ async def list_doctors(
     page: int = Query(0, ge=0, description="Page number (0-based)"),
     size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
     service: DoctorService = Depends(get_doctor_service),
-) -> list[DoctorDetail]:
-    """List doctors with all translations, filterable and paginated."""
+) -> list[Doctor]:
+    """List doctors localized to ``language``, filterable and paginated."""
     return await service.list_doctors(
+        language=language,
         district_id=district,
         category_id=category,
         min_fee=min_fee,
@@ -58,10 +60,10 @@ async def get_doctor(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
 
 
-@router.post("", response_model=DoctorDetail, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=Doctor, status_code=status.HTTP_201_CREATED)
 async def create_doctor(
     payload: DoctorCreate, service: DoctorService = Depends(get_doctor_service)
-) -> DoctorDetail:
+) -> Doctor:
     """Create a single doctor."""
     try:
         result = await service.create_doctor(payload)
@@ -73,13 +75,13 @@ async def create_doctor(
 
 @router.post(
     "/batch",
-    response_model=list[DoctorDetail],
+    response_model=list[Doctor],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_doctors_batch(
     payload: list[DoctorCreate],
     service: DoctorService = Depends(get_doctor_service),
-) -> list[DoctorDetail]:
+) -> list[Doctor]:
     """Create multiple doctors in one transaction."""
     try:
         result = await service.create_doctors_batch(payload)

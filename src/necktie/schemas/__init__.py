@@ -16,13 +16,11 @@ from necktie.schemas.doctor import (
     Doctor,
     DoctorBase,
     DoctorCreate,
-    DoctorDetail,
 )
 from necktie.schemas.operating_hour import (
     OperatingHour,
     OperatingHourBase,
     OperatingHourCreate,
-    OperatingHourDetail,
 )
 
 __all__ = [
@@ -37,9 +35,7 @@ __all__ = [
     "Doctor",
     "DoctorBase",
     "DoctorCreate",
-    "DoctorDetail",
     "OperatingHour",
     "OperatingHourBase",
     "OperatingHourCreate",
-    "OperatingHourDetail",
 ]

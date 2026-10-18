@@ -2,13 +2,12 @@
 
 from pydantic import BaseModel, Field
 
-from necktie.schemas.category import CategoryRef, CategoryTranslated
-from necktie.schemas.district import DistrictRef, DistrictTranslated
+from necktie.schemas.category import CategoryRef
+from necktie.schemas.district import DistrictRef
 from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.schemas.operating_hour import (
     OperatingHour,
     OperatingHourCreate,
-    OperatingHourDetail,
 )
 from necktie.utils import DefaultPhoneList
 
@@ -33,18 +32,6 @@ class Doctor(DoctorBase):
     address: str
     fee_detail: str | None
     operating_hours: list[OperatingHour]
-
-
-class DoctorDetail(DoctorBase):
-    """Full doctor record with every translation."""
-
-    id: int
-    category: CategoryTranslated
-    district: DistrictTranslated
-    name: LocaleModel
-    address: LocaleModel
-    fee_detail: NullableLocaleModel
-    operating_hours: list[OperatingHourDetail]
 
 
 class DoctorCreate(DoctorBase):

@@ -5,7 +5,7 @@ from starlette.concurrency import run_in_threadpool
 from necktie.mappers import DoctorMapper, to_operating_hour_orm
 from necktie.models import Doctor as DoctorEntity
 from necktie.repositories import DoctorRepository
-from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
+from necktie.schemas import Doctor, DoctorCreate
 from necktie.services.category import CategoryService
 from necktie.services.district import DistrictService
 from necktie.utils.languages import Language
@@ -39,16 +39,18 @@ class DoctorService:
 
     async def list_doctors(
         self,
+        language: Language,
         district_id: int | None,
         category_id: int | None,
         min_fee: int | None,
         max_fee: int | None,
         offset: int,
         limit: int,
-    ) -> list[DoctorDetail]:
-        """List doctors with all translations, paginated."""
+    ) -> list[Doctor]:
+        """List doctors localized to ``language``, paginated."""
         doctors = await run_in_threadpool(
             self.repo.find_all,
+            language,
             district_id,
             category_id,
             min_fee,
@@ -56,29 +58,33 @@ class DoctorService:
             offset,
             limit,
         )
-        return [await self.mapper.to_detail(p) for p in doctors]
+        return [await self.mapper.to_doctor(p, language) for p in doctors]
 
     async def get_doctor(self, doctor_id: int, language: Language) -> Doctor:
         """Get one doctor localized, raising DoctorNotFoundError if missing."""
-        doctor = await run_in_threadpool(self.repo.find_by_id, doctor_id)
+        doctor = await run_in_threadpool(
+            self.repo.find_by_id_localized, doctor_id, language
+        )
         if doctor is None:
             raise DoctorNotFoundError(doctor_id)
         return await self.mapper.to_doctor(doctor, language)
 
-    async def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
+    async def create_doctor(self, payload: DoctorCreate) -> Doctor:
         """Create one doctor."""
         await self._validate(payload)
         doctor = await run_in_threadpool(self._save, payload)
-        return await self.mapper.to_detail(doctor)
+        return await self.mapper.to_doctor(doctor, Language.default())
 
     async def create_doctors_batch(
         self, payloads: list[DoctorCreate]
-    ) -> list[DoctorDetail]:
+    ) -> list[Doctor]:
         """Create many doctors in one transaction."""
         for payload in payloads:
             await self._validate(payload)
         doctors = await run_in_threadpool(self._save_all, payloads)
-        return [await self.mapper.to_detail(d) for d in doctors]
+        return [
+            await self.mapper.to_doctor(d, Language.default()) for d in doctors
+        ]
 
     async def _validate(self, payload: DoctorCreate) -> None:
         """Check the referenced category and district against the catalogs."""

@@ -5,20 +5,13 @@ from typing import TYPE_CHECKING
 
 from necktie.mappers.category import CategoryCatalogEntry
 from necktie.mappers.district import DistrictCatalogEntry
-from necktie.mappers.operating_hour import (
-    to_operating_hour,
-    to_operating_hour_detail,
-)
+from necktie.mappers.operating_hour import to_operating_hour
 from necktie.models import Doctor as DoctorEntity
 from necktie.schemas import (
     CategoryRef,
-    CategoryTranslated,
     DistrictRef,
-    DistrictTranslated,
     Doctor,
-    DoctorDetail,
 )
-from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.utils.languages import Language
 
 if TYPE_CHECKING:
@@ -26,21 +19,18 @@ if TYPE_CHECKING:
     from necktie.services.district import DistrictService
 
 
-def _pick(
-    en: str | None,
-    yue: str | None,
-    zh: str | None,
-    language: Language,
-) -> str | None:
-    """Pick an optional doctor text for ``language``.
+def _pick_localized(p: DoctorEntity, language: Language) -> tuple[str, str, str | None]:
+    """Read the single loaded language's name/address/fee_detail.
 
-    Used for fee_detail only (name/address are NOT NULL and read directly).
+    Callers must have loaded only ``language``'s columns (find_by_id_localized);
+    reading the other two languages here would trigger a lazy refresh.
     """
-    if language is Language.YUE:
-        return yue
-    if language is Language.ZH:
-        return zh
-    return en
+    col = language.value
+    return (
+        getattr(p, f"name_{col}") or "",
+        getattr(p, f"address_{col}") or "",
+        getattr(p, f"fee_detail_{col}"),
+    )
 
 
 def _pick_category(c: CategoryCatalogEntry, language: Language) -> str:
@@ -90,48 +80,25 @@ class DoctorMapper:
     async def to_doctor(self, p: DoctorEntity, language: Language) -> Doctor:
         """Serialize a doctor to a localized doctor (single language).
 
-        Category and district names resolve from the Redis catalogs.
+        Category and district names resolve from the Redis catalogs. The
+        practitioner entity is expected to have only ``language``'s text
+        columns loaded (find_by_id_localized).
         """
         districts, categories = await self._catalogs()
         cat = categories[p.category_id]
         dist = districts[p.district_id]
+        name, address, fee_detail = _pick_localized(p, language)
         return Doctor(
             id=p.id,
             category=CategoryRef(id=cat.id, name=_pick_category(cat, language)),
             district=DistrictRef(id=dist.id, name=_pick_district(dist, language)),
-            name=_pick(p.name_en, p.name_yue, p.name_zh, language) or "",
-            address=_pick(p.address_en, p.address_yue, p.address_zh, language) or "",
-            fee_detail=_pick(
-                p.fee_detail_en, p.fee_detail_yue, p.fee_detail_zh, language
-            ),
+            name=name,
+            address=address,
+            fee_detail=fee_detail,
             place_id=p.place_id,
             phone_numbers=p.phone_numbers,
             member_exclusive_fee=p.member_exclusive_fee,
             consultation_fee=p.consultation_fee,
             is_open_on_public_holidays=p.is_open_on_public_holidays,
             operating_hours=[to_operating_hour(oh) for oh in p.operating_hours],
-        )
-
-    async def to_detail(self, p: DoctorEntity) -> DoctorDetail:
-        """Serialize a doctor with every translation."""
-        districts, categories = await self._catalogs()
-        cat = categories[p.category_id]
-        dist = districts[p.district_id]
-        return DoctorDetail(
-            id=p.id,
-            category=CategoryTranslated(id=cat.id, name=cat.names()),
-            district=DistrictTranslated(id=dist.id, name=dist.names()),
-            name=LocaleModel(en=p.name_en, yue=p.name_yue, zh=p.name_zh),
-            address=LocaleModel(
-                en=p.address_en, yue=p.address_yue, zh=p.address_zh
-            ),
-            fee_detail=NullableLocaleModel(
-                en=p.fee_detail_en, yue=p.fee_detail_yue, zh=p.fee_detail_zh
-            ),
-            place_id=p.place_id,
-            phone_numbers=p.phone_numbers,
-            member_exclusive_fee=p.member_exclusive_fee,
-            consultation_fee=p.consultation_fee,
-            is_open_on_public_holidays=p.is_open_on_public_holidays,
-            operating_hours=[to_operating_hour_detail(oh) for oh in p.operating_hours],
         )

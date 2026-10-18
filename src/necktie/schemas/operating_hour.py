@@ -13,13 +13,7 @@ class OperatingHourBase(BaseModel):
 
 
 class OperatingHour(OperatingHourBase):
-    """Operating hour in list responses (day name)."""
-
-    day_of_week: str
-
-
-class OperatingHourDetail(OperatingHourBase):
-    """Operating hour in detail responses (ISO day number)."""
+    """Operating hour in responses (ISO day number)."""
 
     day_of_week: int
 
