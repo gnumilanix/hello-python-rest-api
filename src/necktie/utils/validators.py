@@ -1,6 +1,6 @@
 """Generic field validators."""
 
-from typing import Annotated, Any
+from typing import Annotated
 
 import phonenumbers
 from pydantic import AfterValidator, Field
@@ -38,20 +38,4 @@ DefaultPhoneList = Annotated[
     ),
     AfterValidator(_validate_default_phone_numbers),
 ]
-
-
-def PhoneList(region: str = DEFAULT_PHONE_REGION) -> Any:
-    """Return a self-validating phone-number list type for ``region``.
-
-    Usage: ``phone_numbers: PhoneList()`` (HK) or ``PhoneList(region="US")``.
-    """
-
-    def validator_wrapper(numbers: list[str]) -> list[str]:
-        return validate_phone_numbers(numbers, region=region)
-
-    return Annotated[
-        list[str],
-        Field(min_length=1, description=f"List of validated {region} phone numbers"),
-        AfterValidator(validator_wrapper),
-    ]
 

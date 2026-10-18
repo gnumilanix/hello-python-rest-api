@@ -15,11 +15,9 @@ from necktie.mappers.operating_hour import (
     to_operating_hour,
     to_operating_hour_orm,
 )
-from necktie.utils import DayOfWeek
 
 __all__ = [
     "CategoryCatalogEntry",
-    "DayOfWeek",
     "DistrictCatalogEntry",
     "DoctorMapper",
     "to_category",

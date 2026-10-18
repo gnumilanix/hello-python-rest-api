@@ -58,15 +58,6 @@ class DoctorRepository:
         stmt = stmt.order_by(Doctor.id).offset(offset).limit(limit)
         return self.db.exec(stmt).all()
 
-    def find_by_id(self, doctor_id: int) -> Doctor | None:
-        """Return one doctor by id."""
-        stmt = (
-            select(Doctor)
-            .where(Doctor.id == doctor_id)
-            .options(selectinload(Doctor.operating_hours))
-        )
-        return self.db.exec(stmt).first()
-
     def find_by_id_localized(
         self, doctor_id: int, language: Language
     ) -> Doctor | None:
