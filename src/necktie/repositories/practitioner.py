@@ -2,10 +2,9 @@
 
 from collections.abc import Iterable
 
-from sqlalchemy import exists
 from sqlmodel import Session, select
 
-from necktie.models import Category, District, Practitioner
+from necktie.models import Practitioner
 from necktie.routers.helpers import (
     with_localized_relations,
     with_practitioner_relations,
@@ -53,18 +52,6 @@ class PractitionerRepository:
     def add_all(self, practitioners: Iterable[Practitioner]) -> None:
         """Stage practitioners for insert."""
         self.db.add_all(practitioners)
-
-    def category_exists(self, category_id: int) -> bool:
-        """Whether the category id is valid."""
-        return bool(
-            self.db.exec(select(exists().where(Category.id == category_id))).first()
-        )
-
-    def district_exists(self, district_id: int) -> bool:
-        """Whether the district id is valid."""
-        return bool(
-            self.db.exec(select(exists().where(District.id == district_id))).first()
-        )
 
     def commit(self) -> None:
         """Commit the current transaction."""

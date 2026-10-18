@@ -1,14 +1,9 @@
 """Business logic for the doctor resource."""
 
-import asyncio
-
 from starlette.concurrency import run_in_threadpool
 
 from necktie.mappers import (
-    CategoryCatalogEntry,
-    DistrictCatalogEntry,
-    to_detail,
-    to_doctor,
+    PractitionerMapper,
     to_operating_hour_orm,
     to_translation_orm,
 )
@@ -32,7 +27,7 @@ class DistrictNotFoundError(Exception):
 
 
 class PractitionerService:
-    """Coordinates repository access, cached catalogs, and ORM→schema mapping."""
+    """Coordinates repository access, catalog-backed mapping, and writes."""
 
     def __init__(
         self,
@@ -43,6 +38,7 @@ class PractitionerService:
         self.repo = repository
         self.districts = districts
         self.categories = categories
+        self.mapper = PractitionerMapper(districts, categories)
 
     async def list_doctors(
         self,
@@ -54,7 +50,6 @@ class PractitionerService:
         limit: int,
     ) -> list[DoctorDetail]:
         """List doctors with all translations, paginated."""
-        districts, categories = await self._catalogs()
         doctors = await run_in_threadpool(
             self.repo.find_all,
             district_id,
@@ -64,41 +59,38 @@ class PractitionerService:
             offset,
             limit,
         )
-        return [to_detail(p, categories, districts) for p in doctors]
+        return [await self.mapper.to_detail(p) for p in doctors]
 
     async def get_doctor(self, doctor_id: int, language: str) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
-        districts, categories = await self._catalogs()
         doctor = await run_in_threadpool(
             self.repo.find_by_id_localized, doctor_id, language
         )
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
-        return to_doctor(doctor, language, categories, districts)
+        return await self.mapper.to_doctor(doctor, language)
 
     async def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
         """Create one doctor."""
+        await self._validate(payload)
         doctor = await run_in_threadpool(self._save, payload)
-        districts, categories = await self._catalogs()
-        return to_detail(doctor, categories, districts)
+        return await self.mapper.to_detail(doctor)
 
     async def create_doctors_batch(
         self, payloads: list[DoctorCreate]
     ) -> list[DoctorDetail]:
         """Create many doctors in one transaction."""
+        for payload in payloads:
+            await self._validate(payload)
         doctors = await run_in_threadpool(self._save_all, payloads)
-        districts, categories = await self._catalogs()
-        return [to_detail(d, categories, districts) for d in doctors]
+        return [await self.mapper.to_detail(d) for d in doctors]
 
-    async def _catalogs(
-        self,
-    ) -> tuple[dict[int, DistrictCatalogEntry], dict[int, CategoryCatalogEntry]]:
-        """Fetch the district and category catalogs concurrently."""
-        districts, categories = await asyncio.gather(
-            self.districts.get_translated_map(),
-            self.categories.get_translated_map(),
-        )
-        return districts, categories
+    async def _validate(self, payload: DoctorCreate) -> None:
+        """Check the referenced category and district against the catalogs."""
+        if not await self.categories.exists(payload.category_id):
+            raise CategoryNotFoundError(payload.category_id)
+        if not await self.districts.exists(payload.district_id):
+            raise DistrictNotFoundError(payload.district_id)
 
     def _save(self, payload: DoctorCreate) -> Practitioner:
         """Build and insert one doctor (runs in a worker thread)."""
@@ -115,11 +107,7 @@ class PractitionerService:
         return doctors
 
     def _build(self, payload: DoctorCreate) -> Practitioner:
-        """Validate references and build the ORM object."""
-        if not self.repo.category_exists(payload.category_id):
-            raise CategoryNotFoundError(payload.category_id)
-        if not self.repo.district_exists(payload.district_id):
-            raise DistrictNotFoundError(payload.district_id)
+        """Build the ORM object (references validated beforehand by _validate)."""
         return Practitioner(
             category_id=payload.category_id,
             district_id=payload.district_id,
