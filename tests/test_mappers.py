@@ -1,8 +1,12 @@
 """Unit tests for the language-picker helpers in the doctor mapper (no infra)."""
 
+import pytest
+from pydantic import ValidationError
+
 from necktie.mappers.category import CategoryCatalogEntry
 from necktie.mappers.district import DistrictCatalogEntry
 from necktie.mappers.doctor import _pick_category, _pick_district
+from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.utils.languages import Language
 
 
@@ -42,3 +46,21 @@ class TestPickDistrict:
 
     def test_mandarin(self) -> None:
         assert _pick_district(_district(), Language.ZH) == "中西区"
+
+
+class TestLocaleModel:
+    def test_valid(self) -> None:
+        m = LocaleModel(en="a", yue="b", zh="c")
+        assert m.en == "a"
+
+    def test_rejects_empty_string(self) -> None:
+        with pytest.raises(ValidationError):
+            LocaleModel(en="", yue="b", zh="c")
+
+    def test_nullable_allows_absent(self) -> None:
+        m = NullableLocaleModel()
+        assert m.en is None
+
+    def test_nullable_rejects_empty_when_present(self) -> None:
+        with pytest.raises(ValidationError):
+            NullableLocaleModel(en="")
