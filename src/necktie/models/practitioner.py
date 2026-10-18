@@ -14,26 +14,19 @@ if TYPE_CHECKING:
 
 
 class Practitioner(SQLModel, table=True):
-    """A practitioner listing.
-
-    A practitioner with multiple clinics is intentionally stored as one row
-    per clinic (name clashes make deduplication unreliable), so there is no
-    separate clinic table.
-    """
+    """A practitioner listing (see README "Domain assumptions")."""
 
     __tablename__ = "practitioners"
 
     id: int | None = Field(default=None, primary_key=True)
     category_id: int = Field(foreign_key="category.id")
     district_id: int = Field(foreign_key="district.id")
-    place_id: str | None = None  # Google Places ID
+    place_id: str | None = None
     phone_numbers: list[str] = Field(
         default_factory=list, sa_column=Column(JSONB, nullable=False)
     )
     member_exclusive_fee: int | None = None
     consultation_fee: int
-    # HK clinics either open or close on public holidays as a whole,
-    # regardless of the weekday a holiday falls on.
     is_open_on_public_holidays: bool = False
 
     category: "Category" = Relationship(back_populates="practitioners")

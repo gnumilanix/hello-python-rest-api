@@ -11,10 +11,7 @@ if TYPE_CHECKING:
 
 
 class OperatingHour(SQLModel, table=True):
-    """One open/close interval for a practitioner.
-
-    day_of_week follows ISO 8601: 1 = Monday, 7 = Sunday.
-    """
+    """One open/close interval for a practitioner."""
 
     __tablename__ = "operating_hours"
     __table_args__ = (

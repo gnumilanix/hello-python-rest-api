@@ -61,7 +61,6 @@ class DoctorCreate(DoctorBase):
 
     category_id: int
     district_id: int
-    # Phone numbers are validated (HK region) only on create, not on reads.
     phone_numbers: DefaultPhoneList
     translations: list[DoctorTranslationCreate] = Field(min_length=1)
     operating_hours: list[OperatingHourCreate] = Field(default_factory=list)
