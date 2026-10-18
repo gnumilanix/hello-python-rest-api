@@ -51,7 +51,8 @@ class DoctorDetail(DoctorBase):
     district: DistrictTranslated
     name: dict[str, str]
     address: dict[str, str]
-    fee_detail: dict[str, str | None]
+    # A present key always has a non-null value; no fee detail = key omitted.
+    fee_detail: dict[str, str]
     operating_hours: list[OperatingHourDetail]
 
 

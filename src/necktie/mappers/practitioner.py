@@ -93,7 +93,11 @@ class PractitionerMapper:
             district=DistrictTranslated(id=dist.id, name=dist.name),
             name={t.language_code: t.name for t in p.translations},
             address={t.language_code: t.address for t in p.translations},
-            fee_detail={t.language_code: t.fee_detail for t in p.translations},
+            fee_detail={
+                t.language_code: t.fee_detail
+                for t in p.translations
+                if t.fee_detail is not None
+            },
             place_id=p.place_id,
             phone_numbers=p.phone_numbers,
             member_exclusive_fee=p.member_exclusive_fee,
