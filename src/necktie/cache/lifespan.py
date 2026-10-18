@@ -12,9 +12,9 @@ from fastapi_cache.backends.redis import RedisBackend
 from starlette.requests import Request
 from starlette.responses import Response
 
-from necktie.redis import create_redis_client
+from necktie.cache.redis import create_redis_client
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 CACHE_TTL_SECONDS = int(os.environ.get("CACHE_TTL_SECONDS", "300"))
 

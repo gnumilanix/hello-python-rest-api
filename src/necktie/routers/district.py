@@ -12,7 +12,7 @@ router = APIRouter(prefix="/district", tags=["district"])
 
 
 @router.get("", response_model=list[District])
-@cache(namespace="district")
+@cache(expire=3600, namespace="district")
 def list_districts(
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
     service: DistrictService = Depends(get_district_service),

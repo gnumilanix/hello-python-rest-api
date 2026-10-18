@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from necktie.cache import lifespan
+from necktie.cache.lifespan import lifespan
 from necktie.routers import category_router, district_router, doctor_router
 
 app = FastAPI(title="necktie", version="0.1.0", lifespan=lifespan)

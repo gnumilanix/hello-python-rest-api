@@ -12,7 +12,7 @@ router = APIRouter(prefix="/category", tags=["category"])
 
 
 @router.get("", response_model=list[Category])
-@cache(namespace="category")
+@cache(expire=3600, namespace="category")
 def list_categories(
     language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
     service: CategoryService = Depends(get_category_service),

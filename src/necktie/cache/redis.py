@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from redis import asyncio as aioredis
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 REDIS_URL = os.getenv("REDIS_URL") or (
     f"redis://localhost:{os.environ.get('REDIS_PORT', '6379')}/0"
