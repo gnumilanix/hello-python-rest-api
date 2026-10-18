@@ -56,7 +56,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: [lint, type-check]
+    needs: [lint, type-check, security-scan, dependencies-security-scan]
     services:
       postgres:
         image: postgres:16-alpine

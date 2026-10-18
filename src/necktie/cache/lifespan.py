@@ -28,7 +28,8 @@ def request_key_builder(
     **_kwargs: object,
 ) -> str:
     """Key from request path + sorted query params (ignores injected deps)."""
-    assert request is not None  # noqa: S101 - endpoints always have a request
+    if request is None:
+        raise ValueError("request is required for cache key building")
     items = "&".join(f"{k}={v}" for k, v in sorted(request.query_params.items()))
     return f"{namespace}:{request.url.path}?{items}"
 

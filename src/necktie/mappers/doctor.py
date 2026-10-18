@@ -76,7 +76,8 @@ class DoctorMapper:
                 self._categories.get_translated_map(),
             )
         # The if-block above guarantees both are populated.
-        assert self._district_map is not None and self._category_map is not None
+        if self._district_map is None or self._category_map is None:
+            raise RuntimeError("catalogs failed to populate")
         return self._district_map, self._category_map
 
     async def to_doctor(self, p: DoctorEntity, language: Language) -> Doctor:
