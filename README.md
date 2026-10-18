@@ -146,43 +146,97 @@ Create many doctors in one transaction. Body is a JSON array of the same
 | 404 | `GET /doctor/{id}` with an unknown id |
 | 422 | Validation failure (missing required field, bad phone number, unknown `language`) |
 
-## Development setup
+## Run and build
+
+There are three ways to run the app, depending on what you're doing.
+
+### 1. Local development (deps in Docker, app on host)
+
+Fastest for iterative coding — the app runs in your venv with `--reload`,
+Postgres and Redis run in Docker:
 
 ```bash
+# one-time setup
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
+
+# every session
+docker compose up -d                                   # postgres + redis
+(cd jetbase && ../.venv/bin/jetbase upgrade)           # apply migrations
+.venv/bin/uvicorn necktie.main:app --reload            # app on :8000
 ```
 
-## Run tests
+Docs at http://localhost:8000/docs.
+
+### 2. Full stack in Docker (test the real image)
+
+Builds and runs the exact artifact CI produces:
 
 ```bash
-pytest
+./scripts/local.sh
+# or explicitly:
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
-## Lint
+App on `http://localhost:${APP_PORT:-8000}`. Tear down with
+`docker compose -f docker-compose.yml -f docker-compose.local.yml down`.
+
+To run a pre-built GHCR image instead of building from source:
+
+```bash
+DOCKER_IMAGE=ghcr.io/gnumilanix/necktie:latest \
+  docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+```
+
+### 3. Tests and verification
+
+```bash
+# tests (needs deps running)
+docker compose up -d
+.venv/bin/pytest
+
+# full local CI: lint + type-check + security scan + tests + Docker build
+./scripts/verify.sh
+```
+
+### Scripts
+
+| Script | What it does |
+|---|---|
+| `scripts/local.sh` | Build and run the full stack in Docker |
+| `scripts/build.sh` | Build the Docker image (`necktie:local` or a tag arg) |
+| `scripts/verify.sh` | Lint + mypy + bandit + pytest + Docker build |
+
+## Lint and type-check
 
 ```bash
 ruff check .
 ruff format --check .
+mypy src/
 ```
 
 ## Project structure
 
 ```
-├── pyproject.toml      # Package metadata and tool config
+├── pyproject.toml              # Package metadata and tool config
+├── Dockerfile                  # App image (multi-stage, Alpine)
+├── docker-compose.yml          # Infra only: Postgres + Redis
+├── docker-compose.local.yml    # Adds the app service (merge with -f)
+├── .github/workflows/ci.yaml   # CI pipeline
+├── scripts/                    # local.sh, build.sh, verify.sh
 ├── src/
-│   └── necktie/         # Package source
-│       ├── main.py      # App entry point
-│       ├── cache/       # Redis cache (lifespan, catalogs, client)
-│       ├── db/          # Engine/session
-│       ├── mappers/     # ORM → schema serialization
-│       ├── models/      # SQLModel ORM entities
-│       ├── repositories/# SQL data access
-│       ├── routers/     # FastAPI endpoints + DI
-│       ├── schemas/     # Pydantic API models
-│       ├── services/    # Business logic
-│       └── utils/       # Enums, validators, constants
-├── jetbase/             # SQL migrations
-└── tests/               # Test suite
+│   └── necktie/                # Package source
+│       ├── main.py             # App entry point
+│       ├── cache/              # Redis cache (lifespan, catalogs, client)
+│       ├── db/                 # Engine/session
+│       ├── mappers/            # ORM → schema serialization
+│       ├── models/             # SQLModel ORM entities
+│       ├── repositories/       # SQL data access
+│       ├── routers/            # FastAPI endpoints + DI
+│       ├── schemas/            # Pydantic API models
+│       ├── services/           # Business logic
+│       └── utils/              # Enums, validators, constants
+├── jetbase/                    # SQL migrations
+└── tests/                      # Test suite
 ```

@@ -1,4 +1,4 @@
-"""Tests for the doctor endpoints: GET /doctor, GET /doctor/{id}, POST /doctor, POST /doctor/batch."""
+"""Tests for the doctor endpoints (GET list, GET by id, POST single, POST batch)."""
 
 from fastapi.testclient import TestClient
 
