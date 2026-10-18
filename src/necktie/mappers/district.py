@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 from necktie.models import District
 from necktie.schemas import District as DistrictSchema
-from necktie.utils.constants import DEFAULT_LANGUAGE
+from necktie.schemas.district import DistrictNames
+from necktie.utils.languages import Language
 
 
 class DistrictCatalogEntry(BaseModel):
@@ -12,7 +13,13 @@ class DistrictCatalogEntry(BaseModel):
 
     id: int
     sort_order: int
-    name: dict[str, str]
+    name_en: str
+    name_yue: str
+    name_zh: str
+
+    def names(self) -> DistrictNames:
+        """The names as an API schema object."""
+        return DistrictNames(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
 
 
 def to_district_catalog_entry(d: District) -> DistrictCatalogEntry:
@@ -20,11 +27,23 @@ def to_district_catalog_entry(d: District) -> DistrictCatalogEntry:
     return DistrictCatalogEntry(
         id=d.id,
         sort_order=d.sort_order,
-        name={t.language_code: t.name for t in d.translations},
+        name_en=d.name_en,
+        name_yue=d.name_yue,
+        name_zh=d.name_zh,
     )
 
 
-def to_district(entry: DistrictCatalogEntry, language: str) -> DistrictSchema:
+def _pick(entry: DistrictCatalogEntry, language: Language) -> str:
+    """Pick the name for ``language``."""
+    if language is Language.YUE:
+        return entry.name_yue
+    if language is Language.ZH:
+        return entry.name_zh
+    return entry.name_en
+
+
+def to_district(entry: DistrictCatalogEntry, language: Language) -> DistrictSchema:
     """Serialize a catalog entry localized to ``language``."""
-    name = entry.name.get(language) or entry.name.get(DEFAULT_LANGUAGE, "")
-    return DistrictSchema(id=entry.id, sort_order=entry.sort_order, name=name)
+    return DistrictSchema(
+        id=entry.id, sort_order=entry.sort_order, name=_pick(entry, language)
+    )

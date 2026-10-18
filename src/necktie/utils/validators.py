@@ -2,7 +2,6 @@
 
 from typing import Annotated, Any
 
-import langcodes
 import phonenumbers
 from pydantic import AfterValidator, Field
 
@@ -55,19 +54,4 @@ def PhoneList(region: str = DEFAULT_PHONE_REGION) -> Any:
         Field(min_length=1, description=f"List of validated {region} phone numbers"),
         AfterValidator(validator_wrapper),
     ]
-
-
-def validate_language_code(code: str) -> str:
-    """Validate ``code`` is a well-formed BCP 47 language tag."""
-    if not langcodes.tag_is_valid(code):
-        raise ValueError(f"Invalid language code: {code}")
-    return code
-
-
-LanguageCode = Annotated[
-    str,
-    # RFC 5646 §4.4.1: buffers must allow language tags of at least 35 chars.
-    Field(min_length=2, max_length=35, description="BCP 47 language tag"),
-    AfterValidator(validate_language_code),
-]
 

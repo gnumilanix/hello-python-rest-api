@@ -10,6 +10,7 @@ from necktie.mappers import (
 )
 from necktie.repositories.category import CategoryRepository
 from necktie.schemas import Category as CategorySchema
+from necktie.utils.languages import Language
 
 
 class CategoryService:
@@ -23,7 +24,7 @@ class CategoryService:
             load=lambda: [to_category_catalog_entry(c) for c in self.repo.find_all()],
         )
 
-    async def list_categories(self, language: str) -> list[CategorySchema]:
+    async def list_categories(self, language: Language) -> list[CategorySchema]:
         """List categories localized to ``language``."""
         return [to_category(e, language) for e in await self.catalog.get()]
 

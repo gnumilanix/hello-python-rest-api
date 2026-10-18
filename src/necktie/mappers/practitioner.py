@@ -1,7 +1,6 @@
 """Mappers between Practitioner ORM models and API schemas."""
 
 import asyncio
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from necktie.mappers.category import CategoryCatalogEntry
@@ -18,17 +17,49 @@ from necktie.schemas import (
     DistrictTranslated,
     Doctor,
     DoctorDetail,
+    DoctorText,
+    DoctorTextOptional,
 )
-from necktie.utils.constants import DEFAULT_LANGUAGE
+from necktie.utils.languages import Language
 
 if TYPE_CHECKING:
     from necktie.services.category import CategoryService
     from necktie.services.district import DistrictService
 
 
-def _localized(names: Mapping[str, str], language: str) -> str:
-    """Pick ``language`` from a name map, falling back to the default language."""
-    return names.get(language) or names.get(DEFAULT_LANGUAGE, "")
+def _pick(
+    en: str | None,
+    yue: str | None,
+    zh: str | None,
+    language: Language,
+) -> str | None:
+    """Pick an optional practitioner text for ``language``.
+
+    Used for fee_detail only (name/address are NOT NULL and read directly).
+    """
+    if language is Language.YUE:
+        return yue
+    if language is Language.ZH:
+        return zh
+    return en
+
+
+def _pick_category(c: CategoryCatalogEntry, language: Language) -> str:
+    """Pick a category name for ``language``."""
+    if language is Language.YUE:
+        return c.name_yue
+    if language is Language.ZH:
+        return c.name_zh
+    return c.name_en
+
+
+def _pick_district(d: DistrictCatalogEntry, language: Language) -> str:
+    """Pick a district name for ``language``."""
+    if language is Language.YUE:
+        return d.name_yue
+    if language is Language.ZH:
+        return d.name_zh
+    return d.name_en
 
 
 class PractitionerMapper:
@@ -57,23 +88,23 @@ class PractitionerMapper:
             )
         return self._district_map, self._category_map
 
-    async def to_doctor(self, p: Practitioner, language: str) -> Doctor:
+    async def to_doctor(self, p: Practitioner, language: Language) -> Doctor:
         """Serialize a practitioner to a localized doctor (single language).
 
-        Practitioner translations are pre-filtered to the requested language
-        by the query; category and district names resolve from the catalogs.
+        Category and district names resolve from the Redis catalogs.
         """
         districts, categories = await self._catalogs()
         cat = categories[p.category_id]
         dist = districts[p.district_id]
-        own = p.translations[0] if p.translations else None
         return Doctor(
             id=p.id,
-            category=CategoryRef(id=cat.id, name=_localized(cat.name, language)),
-            district=DistrictRef(id=dist.id, name=_localized(dist.name, language)),
-            name=own.name if own else "",
-            address=own.address if own else "",
-            fee_detail=own.fee_detail if own else None,
+            category=CategoryRef(id=cat.id, name=_pick_category(cat, language)),
+            district=DistrictRef(id=dist.id, name=_pick_district(dist, language)),
+            name=_pick(p.name_en, p.name_yue, p.name_zh, language) or "",
+            address=_pick(p.address_en, p.address_yue, p.address_zh, language) or "",
+            fee_detail=_pick(
+                p.fee_detail_en, p.fee_detail_yue, p.fee_detail_zh, language
+            ),
             place_id=p.place_id,
             phone_numbers=p.phone_numbers,
             member_exclusive_fee=p.member_exclusive_fee,
@@ -89,15 +120,13 @@ class PractitionerMapper:
         dist = districts[p.district_id]
         return DoctorDetail(
             id=p.id,
-            category=CategoryTranslated(id=cat.id, name=cat.name),
-            district=DistrictTranslated(id=dist.id, name=dist.name),
-            name={t.language_code: t.name for t in p.translations},
-            address={t.language_code: t.address for t in p.translations},
-            fee_detail={
-                t.language_code: t.fee_detail
-                for t in p.translations
-                if t.fee_detail is not None
-            },
+            category=CategoryTranslated(id=cat.id, name=cat.names()),
+            district=DistrictTranslated(id=dist.id, name=dist.names()),
+            name=DoctorText(en=p.name_en, yue=p.name_yue, zh=p.name_zh),
+            address=DoctorText(en=p.address_en, yue=p.address_yue, zh=p.address_zh),
+            fee_detail=DoctorTextOptional(
+                en=p.fee_detail_en, yue=p.fee_detail_yue, zh=p.fee_detail_zh
+            ),
             place_id=p.place_id,
             phone_numbers=p.phone_numbers,
             member_exclusive_fee=p.member_exclusive_fee,

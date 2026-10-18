@@ -16,6 +16,14 @@ class District(DistrictBase):
     name: str
 
 
+class DistrictNames(BaseModel):
+    """District names in every supported language."""
+
+    en: str
+    yue: str
+    zh: str
+
+
 class DistrictRef(BaseModel):
     """District reference with a single localized name (nested in responses)."""
 
@@ -27,4 +35,4 @@ class DistrictTranslated(BaseModel):
     """District reference with all translations."""
 
     id: int
-    name: dict[str, str]
+    name: DistrictNames

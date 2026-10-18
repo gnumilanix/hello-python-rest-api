@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 from necktie.models import Category
 from necktie.schemas import Category as CategorySchema
-from necktie.utils.constants import DEFAULT_LANGUAGE
+from necktie.schemas.category import CategoryNames
+from necktie.utils.languages import Language
 
 
 class CategoryCatalogEntry(BaseModel):
@@ -12,7 +13,13 @@ class CategoryCatalogEntry(BaseModel):
 
     id: int
     name_key: str
-    name: dict[str, str]
+    name_en: str
+    name_yue: str
+    name_zh: str
+
+    def names(self) -> CategoryNames:
+        """The names as an API schema object."""
+        return CategoryNames(en=self.name_en, yue=self.name_yue, zh=self.name_zh)
 
 
 def to_category_catalog_entry(c: Category) -> CategoryCatalogEntry:
@@ -20,11 +27,23 @@ def to_category_catalog_entry(c: Category) -> CategoryCatalogEntry:
     return CategoryCatalogEntry(
         id=c.id,
         name_key=c.name_key,
-        name={t.language_code: t.name for t in c.translations},
+        name_en=c.name_en,
+        name_yue=c.name_yue,
+        name_zh=c.name_zh,
     )
 
 
-def to_category(entry: CategoryCatalogEntry, language: str) -> CategorySchema:
+def _pick(entry: CategoryCatalogEntry, language: Language) -> str:
+    """Pick the name for ``language``."""
+    if language is Language.YUE:
+        return entry.name_yue
+    if language is Language.ZH:
+        return entry.name_zh
+    return entry.name_en
+
+
+def to_category(entry: CategoryCatalogEntry, language: Language) -> CategorySchema:
     """Serialize a catalog entry localized to ``language``."""
-    name = entry.name.get(language) or entry.name.get(DEFAULT_LANGUAGE, "")
-    return CategorySchema(id=entry.id, name_key=entry.name_key, name=name)
+    return CategorySchema(
+        id=entry.id, name_key=entry.name_key, name=_pick(entry, language)
+    )

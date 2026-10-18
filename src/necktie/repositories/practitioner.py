@@ -2,13 +2,10 @@
 
 from collections.abc import Iterable
 
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from necktie.models import Practitioner
-from necktie.routers.helpers import (
-    with_localized_relations,
-    with_practitioner_relations,
-)
 
 
 class PractitionerRepository:
@@ -27,7 +24,7 @@ class PractitionerRepository:
         limit: int,
     ) -> Iterable[Practitioner]:
         """Return practitioners matching the filters, paginated."""
-        stmt = with_practitioner_relations(select(Practitioner))
+        stmt = select(Practitioner).options(selectinload(Practitioner.operating_hours))
         if district_id is not None:
             stmt = stmt.where(Practitioner.district_id == district_id)
         if category_id is not None:
@@ -39,13 +36,12 @@ class PractitionerRepository:
         stmt = stmt.order_by(Practitioner.id).offset(offset).limit(limit)
         return self.db.exec(stmt).all()
 
-    def find_by_id_localized(
-        self, practitioner_id: int, language: str
-    ) -> Practitioner | None:
-        """Return one practitioner loading only ``language`` translations."""
-        stmt = with_localized_relations(
-            select(Practitioner).where(Practitioner.id == practitioner_id),
-            language,
+    def find_by_id(self, practitioner_id: int) -> Practitioner | None:
+        """Return one practitioner by id."""
+        stmt = (
+            select(Practitioner)
+            .where(Practitioner.id == practitioner_id)
+            .options(selectinload(Practitioner.operating_hours))
         )
         return self.db.exec(stmt).first()
 

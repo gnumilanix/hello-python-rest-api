@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from necktie.models.category import Category
     from necktie.models.district import District
     from necktie.models.operating_hour import OperatingHour
-    from necktie.models.practitioner_translation import PractitionerTranslation
 
 
 class Practitioner(SQLModel, table=True):
@@ -28,12 +27,18 @@ class Practitioner(SQLModel, table=True):
     member_exclusive_fee: int | None = None
     consultation_fee: int
     is_open_on_public_holidays: bool = False
+    name_en: str
+    name_yue: str
+    name_zh: str
+    address_en: str
+    address_yue: str
+    address_zh: str
+    fee_detail_en: str | None = None
+    fee_detail_yue: str | None = None
+    fee_detail_zh: str | None = None
 
     category: "Category" = Relationship(back_populates="practitioners")
     district: "District" = Relationship(back_populates="practitioners")
-    translations: list["PractitionerTranslation"] = Relationship(
-        back_populates="practitioner", cascade_delete=True
-    )
     operating_hours: list["OperatingHour"] = Relationship(
         back_populates="practitioner", cascade_delete=True
     )

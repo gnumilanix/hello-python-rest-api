@@ -9,16 +9,23 @@ from necktie.schemas.operating_hour import (
     OperatingHourCreate,
     OperatingHourDetail,
 )
-from necktie.utils import DefaultPhoneList, LanguageCode
+from necktie.utils import DefaultPhoneList
 
 
-class DoctorTranslationCreate(BaseModel):
-    """Translation supplied when creating a doctor."""
+class DoctorText(BaseModel):
+    """Required translatable text: every supported language present."""
 
-    language_code: LanguageCode
-    name: str
-    address: str
-    fee_detail: str | None = None
+    en: str
+    yue: str
+    zh: str
+
+
+class DoctorTextOptional(BaseModel):
+    """Optional translatable text (e.g. fee_detail): every field may be absent."""
+
+    en: str | None = None
+    yue: str | None = None
+    zh: str | None = None
 
 
 class DoctorBase(BaseModel):
@@ -49,10 +56,9 @@ class DoctorDetail(DoctorBase):
     id: int
     category: CategoryTranslated
     district: DistrictTranslated
-    name: dict[str, str]
-    address: dict[str, str]
-    # A present key always has a non-null value; no fee detail = key omitted.
-    fee_detail: dict[str, str]
+    name: DoctorText
+    address: DoctorText
+    fee_detail: DoctorTextOptional
     operating_hours: list[OperatingHourDetail]
 
 
@@ -62,5 +68,7 @@ class DoctorCreate(DoctorBase):
     category_id: int
     district_id: int
     phone_numbers: DefaultPhoneList
-    translations: list[DoctorTranslationCreate] = Field(min_length=1)
+    name: DoctorText
+    address: DoctorText
+    fee_detail: DoctorTextOptional = Field(default_factory=DoctorTextOptional)
     operating_hours: list[OperatingHourCreate] = Field(default_factory=list)

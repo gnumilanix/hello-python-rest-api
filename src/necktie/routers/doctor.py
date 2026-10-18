@@ -17,7 +17,7 @@ from necktie.services import (
     PractitionerNotFoundError,
     PractitionerService,
 )
-from necktie.utils.constants import DEFAULT_LANGUAGE
+from necktie.utils.languages import Language
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
 
@@ -48,7 +48,7 @@ async def list_doctors(
 @cache(namespace="doctor")
 async def get_doctor(
     doctor_id: int,
-    language: str = Query(DEFAULT_LANGUAGE, description="Response language"),
+    language: Language = Query(Language.default(), description="Response language"),
     service: PractitionerService = Depends(get_doctor_service),
 ) -> Doctor:
     """Get one doctor localized to ``language``."""

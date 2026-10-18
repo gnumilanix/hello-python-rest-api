@@ -2,16 +2,13 @@
 
 from starlette.concurrency import run_in_threadpool
 
-from necktie.mappers import (
-    PractitionerMapper,
-    to_operating_hour_orm,
-    to_translation_orm,
-)
+from necktie.mappers import PractitionerMapper, to_operating_hour_orm
 from necktie.models import Practitioner
 from necktie.repositories import PractitionerRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services.category import CategoryService
 from necktie.services.district import DistrictService
+from necktie.utils.languages import Language
 
 
 class PractitionerNotFoundError(Exception):
@@ -61,11 +58,9 @@ class PractitionerService:
         )
         return [await self.mapper.to_detail(p) for p in doctors]
 
-    async def get_doctor(self, doctor_id: int, language: str) -> Doctor:
+    async def get_doctor(self, doctor_id: int, language: Language) -> Doctor:
         """Get one doctor localized, raising PractitionerNotFoundError if missing."""
-        doctor = await run_in_threadpool(
-            self.repo.find_by_id_localized, doctor_id, language
-        )
+        doctor = await run_in_threadpool(self.repo.find_by_id, doctor_id)
         if doctor is None:
             raise PractitionerNotFoundError(doctor_id)
         return await self.mapper.to_doctor(doctor, language)
@@ -116,7 +111,15 @@ class PractitionerService:
             member_exclusive_fee=payload.member_exclusive_fee,
             consultation_fee=payload.consultation_fee,
             is_open_on_public_holidays=payload.is_open_on_public_holidays,
-            translations=[to_translation_orm(t) for t in payload.translations],
+            name_en=payload.name.en,
+            name_yue=payload.name.yue,
+            name_zh=payload.name.zh,
+            address_en=payload.address.en,
+            address_yue=payload.address.yue,
+            address_zh=payload.address.zh,
+            fee_detail_en=payload.fee_detail.en,
+            fee_detail_yue=payload.fee_detail.yue,
+            fee_detail_zh=payload.fee_detail.zh,
             operating_hours=[
                 to_operating_hour_orm(oh) for oh in payload.operating_hours
             ],

@@ -1,14 +1,11 @@
 -- upgrade
 
--- Convert comma-separated TEXT to a JSONB array, preserving existing data.
+-- Convert comma-separated TEXT to a JSONB array.
+-- Practitioners have no seeded rows at this point, so a plain type change
+-- with an empty-array default is sufficient.
 ALTER TABLE practitioners
     ALTER COLUMN phone_numbers TYPE JSONB
-    USING CASE
-        WHEN phone_numbers IS NULL OR btrim(phone_numbers) = '' THEN NULL
-        ELSE to_jsonb(
-            ARRAY(SELECT btrim(x) FROM unnest(string_to_array(phone_numbers, ',')) AS x)
-        )
-    END;
+    USING '[]'::jsonb;
 
 -- rollback
 

@@ -12,7 +12,6 @@ license = { text = "MIT" }
 dependencies = [
     "fastapi[standard]>=0.115",
     "fastapi-cache2[redis]>=0.2.2",
-    "langcodes>=3.4",
     "phonenumbers>=8.13",
     "uvicorn[standard]>=0.30",
     "sqlmodel>=0.0.22",

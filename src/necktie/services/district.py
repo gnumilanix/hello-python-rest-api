@@ -10,6 +10,7 @@ from necktie.mappers import (
 )
 from necktie.repositories.district import DistrictRepository
 from necktie.schemas import District as DistrictSchema
+from necktie.utils.languages import Language
 
 
 class DistrictService:
@@ -23,7 +24,7 @@ class DistrictService:
             load=lambda: [to_district_catalog_entry(d) for d in self.repo.find_all()],
         )
 
-    async def list_districts(self, language: str) -> list[DistrictSchema]:
+    async def list_districts(self, language: Language) -> list[DistrictSchema]:
         """List districts localized to ``language``, ordered by sort_order."""
         return [to_district(e, language) for e in await self.catalog.get()]
 

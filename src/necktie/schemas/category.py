@@ -16,6 +16,14 @@ class Category(CategoryBase):
     name: str
 
 
+class CategoryNames(BaseModel):
+    """Category names in every supported language."""
+
+    en: str
+    yue: str
+    zh: str
+
+
 class CategoryRef(BaseModel):
     """Category reference with a single localized name (nested in responses)."""
 
@@ -27,4 +35,4 @@ class CategoryTranslated(BaseModel):
     """Category reference with all translations."""
 
     id: int
-    name: dict[str, str]
+    name: CategoryNames
