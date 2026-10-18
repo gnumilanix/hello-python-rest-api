@@ -121,7 +121,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          tags: ghcr.io/gnumilanix/necktie:${{ github.sha }}
 
   security-scan:
     runs-on: ubuntu-latest
@@ -167,7 +167,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: "ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          image-ref: "ghcr.io/gnumilanix/necktie:${{ github.sha }}"
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
@@ -193,5 +193,5 @@ jobs:
       - name: Promote verified image to latest
         run: |
           regctl image copy \
-            ghcr.io/${{ github.repository }}:${{ github.sha }} \
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/gnumilanix/necktie:${{ github.sha }} \
+            ghcr.io/gnumilanix/necktie:latest
