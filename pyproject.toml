@@ -16,7 +16,7 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "sqlmodel>=0.0.22",
     "psycopg[binary]>=3.1",
-    "redis>=5.0",
+    "redis>=4.2,<5.0",
     "jetbase",
     "python-dotenv",
 ]
@@ -24,6 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "httpx",
+    "mypy>=1.0",
     "pytest>=8.0",
     "ruff>=0.6",
 ]
@@ -46,3 +47,17 @@ src = ["src", "tests"]
 # B008: Depends() in argument defaults is the idiomatic FastAPI pattern.
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["B008"]
+
+[tool.mypy]
+mypy_path = "src"
+packages = ["necktie"]
+ignore_missing_imports = true
+# TODO: tighten incrementally — strict mode surfaces SQLAlchemy generic issues
+strict = false
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["necktie.repositories.*", "necktie.mappers.*"]
+# SQLAlchemy/SQLModel ORM generics: load_only/selectinload/order_by/column
+# types produce false-positive arg-type errors with mypy's strict stubs.
+disable_error_code = ["arg-type", "call-arg", "var-annotated"]

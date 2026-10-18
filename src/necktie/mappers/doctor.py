@@ -75,6 +75,8 @@ class DoctorMapper:
                 self._districts.get_translated_map(),
                 self._categories.get_translated_map(),
             )
+        # The if-block above guarantees both are populated.
+        assert self._district_map is not None and self._category_map is not None
         return self._district_map, self._category_map
 
     async def to_doctor(self, p: DoctorEntity, language: Language) -> Doctor:

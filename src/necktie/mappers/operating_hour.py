@@ -6,8 +6,12 @@ from necktie.schemas import OperatingHourCreate
 
 
 def to_operating_hour_orm(oh: OperatingHourCreate) -> OperatingHour:
-    """Build an OperatingHour ORM object from create payload."""
+    """Build an OperatingHour ORM object from create payload.
+
+    doctor_id is set by SQLAlchemy via the relationship on save.
+    """
     return OperatingHour(
+        doctor_id=0,  # placeholder; overwritten by the relationship on save
         day_of_week=oh.day_of_week,
         open_time=oh.open_time,
         close_time=oh.close_time,

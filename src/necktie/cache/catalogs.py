@@ -1,7 +1,7 @@
 """Redis-backed store for lazily loaded reference-data catalogs."""
 
 from collections.abc import Callable, Iterable
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from fastapi_cache import FastAPICache
 from pydantic import TypeAdapter
@@ -12,7 +12,7 @@ from necktie.cache.lifespan import CACHE_TTL_SECONDS
 EntryT = TypeVar("EntryT")
 
 
-class CatalogStore:
+class CatalogStore(Generic[EntryT]):
     """Caches a serialized catalog in Redis, populating it on first request."""
 
     def __init__(
