@@ -2,17 +2,17 @@
 
 from starlette.concurrency import run_in_threadpool
 
-from necktie.mappers import PractitionerMapper, to_operating_hour_orm
-from necktie.models import Practitioner
-from necktie.repositories import PractitionerRepository
+from necktie.mappers import DoctorMapper, to_operating_hour_orm
+from necktie.models import Doctor as DoctorEntity
+from necktie.repositories import DoctorRepository
 from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services.category import CategoryService
 from necktie.services.district import DistrictService
 from necktie.utils.languages import Language
 
 
-class PractitionerNotFoundError(Exception):
-    """Raised when a practitioner id does not exist."""
+class DoctorNotFoundError(Exception):
+    """Raised when a doctor id does not exist."""
 
 
 class CategoryNotFoundError(Exception):
@@ -23,19 +23,19 @@ class DistrictNotFoundError(Exception):
     """Raised when a district id does not exist."""
 
 
-class PractitionerService:
+class DoctorService:
     """Coordinates repository access, catalog-backed mapping, and writes."""
 
     def __init__(
         self,
-        repository: PractitionerRepository,
+        repository: DoctorRepository,
         districts: DistrictService,
         categories: CategoryService,
     ) -> None:
         self.repo = repository
         self.districts = districts
         self.categories = categories
-        self.mapper = PractitionerMapper(districts, categories)
+        self.mapper = DoctorMapper(districts, categories)
 
     async def list_doctors(
         self,
@@ -59,10 +59,10 @@ class PractitionerService:
         return [await self.mapper.to_detail(p) for p in doctors]
 
     async def get_doctor(self, doctor_id: int, language: Language) -> Doctor:
-        """Get one doctor localized, raising PractitionerNotFoundError if missing."""
+        """Get one doctor localized, raising DoctorNotFoundError if missing."""
         doctor = await run_in_threadpool(self.repo.find_by_id, doctor_id)
         if doctor is None:
-            raise PractitionerNotFoundError(doctor_id)
+            raise DoctorNotFoundError(doctor_id)
         return await self.mapper.to_doctor(doctor, language)
 
     async def create_doctor(self, payload: DoctorCreate) -> DoctorDetail:
@@ -87,23 +87,23 @@ class PractitionerService:
         if not await self.districts.exists(payload.district_id):
             raise DistrictNotFoundError(payload.district_id)
 
-    def _save(self, payload: DoctorCreate) -> Practitioner:
+    def _save(self, payload: DoctorCreate) -> DoctorEntity:
         """Build and insert one doctor (runs in a worker thread)."""
         doctor = self._build(payload)
         self.repo.add_all([doctor])
         self.repo.commit()
         return doctor
 
-    def _save_all(self, payloads: list[DoctorCreate]) -> list[Practitioner]:
+    def _save_all(self, payloads: list[DoctorCreate]) -> list[DoctorEntity]:
         """Build and insert many doctors in one transaction (worker thread)."""
         doctors = [self._build(p) for p in payloads]
         self.repo.add_all(doctors)
         self.repo.commit()
         return doctors
 
-    def _build(self, payload: DoctorCreate) -> Practitioner:
+    def _build(self, payload: DoctorCreate) -> DoctorEntity:
         """Build the ORM object (references validated beforehand by _validate)."""
-        return Practitioner(
+        return DoctorEntity(
             category_id=payload.category_id,
             district_id=payload.district_id,
             place_id=payload.place_id,

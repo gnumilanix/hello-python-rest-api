@@ -1,7 +1,7 @@
 """Doctor endpoints.
 
 The resource is exposed as ``/doctor`` while the underlying table is
-``practitioners``. Routes delegate to the service layer; this module only
+``doctors``. Routes delegate to the service layer; this module only
 handles HTTP concerns (params, status codes, error mapping).
 """
 
@@ -14,8 +14,8 @@ from necktie.schemas import Doctor, DoctorCreate, DoctorDetail
 from necktie.services import (
     CategoryNotFoundError,
     DistrictNotFoundError,
-    PractitionerNotFoundError,
-    PractitionerService,
+    DoctorNotFoundError,
+    DoctorService,
 )
 from necktie.utils.languages import Language
 
@@ -31,7 +31,7 @@ async def list_doctors(
     max_fee: int | None = Query(None, ge=0, description="Max consultation fee"),
     page: int = Query(0, ge=0, description="Page number (0-based)"),
     size: int = Query(20, ge=10, le=100, description="Page size (10-100)"),
-    service: PractitionerService = Depends(get_doctor_service),
+    service: DoctorService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """List doctors with all translations, filterable and paginated."""
     return await service.list_doctors(
@@ -49,18 +49,18 @@ async def list_doctors(
 async def get_doctor(
     doctor_id: int,
     language: Language = Query(Language.default(), description="Response language"),
-    service: PractitionerService = Depends(get_doctor_service),
+    service: DoctorService = Depends(get_doctor_service),
 ) -> Doctor:
     """Get one doctor localized to ``language``."""
     try:
         return await service.get_doctor(doctor_id, language=language)
-    except PractitionerNotFoundError:
+    except DoctorNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
 
 
 @router.post("", response_model=DoctorDetail, status_code=status.HTTP_201_CREATED)
 async def create_doctor(
-    payload: DoctorCreate, service: PractitionerService = Depends(get_doctor_service)
+    payload: DoctorCreate, service: DoctorService = Depends(get_doctor_service)
 ) -> DoctorDetail:
     """Create a single doctor."""
     try:
@@ -78,7 +78,7 @@ async def create_doctor(
 )
 async def create_doctors_batch(
     payload: list[DoctorCreate],
-    service: PractitionerService = Depends(get_doctor_service),
+    service: DoctorService = Depends(get_doctor_service),
 ) -> list[DoctorDetail]:
     """Create multiple doctors in one transaction."""
     try:

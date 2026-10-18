@@ -1,15 +1,15 @@
 """Services, one module per aggregate."""
 
-from necktie.services.practitioner import (
+from necktie.services.doctor import (
     CategoryNotFoundError,
     DistrictNotFoundError,
-    PractitionerNotFoundError,
-    PractitionerService,
+    DoctorNotFoundError,
+    DoctorService,
 )
 
 __all__ = [
     "CategoryNotFoundError",
     "DistrictNotFoundError",
-    "PractitionerNotFoundError",
-    "PractitionerService",
+    "DoctorNotFoundError",
+    "DoctorService",
 ]

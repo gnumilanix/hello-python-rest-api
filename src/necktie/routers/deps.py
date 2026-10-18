@@ -7,9 +7,9 @@ from necktie.db.session import get_db
 from necktie.repositories import (
     CategoryRepository,
     DistrictRepository,
-    PractitionerRepository,
+    DoctorRepository,
 )
-from necktie.services import PractitionerService
+from necktie.services import DoctorService
 from necktie.services.category import CategoryService
 from necktie.services.district import DistrictService
 
@@ -28,6 +28,6 @@ def get_doctor_service(
     db: Session = Depends(get_db),
     districts: DistrictService = Depends(get_district_service),
     categories: CategoryService = Depends(get_category_service),
-) -> PractitionerService:
-    """Build the practitioner service with its repository and catalog services."""
-    return PractitionerService(PractitionerRepository(db), districts, categories)
+) -> DoctorService:
+    """Build the doctor service with its repository and catalog services."""
+    return DoctorService(DoctorRepository(db), districts, categories)

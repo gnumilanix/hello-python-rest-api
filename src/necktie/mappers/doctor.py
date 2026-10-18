@@ -1,4 +1,4 @@
-"""Mappers between Practitioner ORM models and API schemas."""
+"""Mappers between Doctor ORM models and API schemas."""
 
 import asyncio
 from typing import TYPE_CHECKING
@@ -9,7 +9,7 @@ from necktie.mappers.operating_hour import (
     to_operating_hour,
     to_operating_hour_detail,
 )
-from necktie.models import Practitioner
+from necktie.models import Doctor as DoctorEntity
 from necktie.schemas import (
     CategoryRef,
     CategoryTranslated,
@@ -33,7 +33,7 @@ def _pick(
     zh: str | None,
     language: Language,
 ) -> str | None:
-    """Pick an optional practitioner text for ``language``.
+    """Pick an optional doctor text for ``language``.
 
     Used for fee_detail only (name/address are NOT NULL and read directly).
     """
@@ -62,8 +62,8 @@ def _pick_district(d: DistrictCatalogEntry, language: Language) -> str:
     return d.name_en
 
 
-class PractitionerMapper:
-    """Serializes practitioners, resolving district/category names itself.
+class DoctorMapper:
+    """Serializes doctors, resolving district/category names itself.
 
     The catalog services are injected via the constructor and queried on
     first use per instance, so call sites never handle reference data.
@@ -88,8 +88,8 @@ class PractitionerMapper:
             )
         return self._district_map, self._category_map
 
-    async def to_doctor(self, p: Practitioner, language: Language) -> Doctor:
-        """Serialize a practitioner to a localized doctor (single language).
+    async def to_doctor(self, p: DoctorEntity, language: Language) -> Doctor:
+        """Serialize a doctor to a localized doctor (single language).
 
         Category and district names resolve from the Redis catalogs.
         """
@@ -113,8 +113,8 @@ class PractitionerMapper:
             operating_hours=[to_operating_hour(oh) for oh in p.operating_hours],
         )
 
-    async def to_detail(self, p: Practitioner) -> DoctorDetail:
-        """Serialize a practitioner with every translation."""
+    async def to_detail(self, p: DoctorEntity) -> DoctorDetail:
+        """Serialize a doctor with every translation."""
         districts, categories = await self._catalogs()
         cat = categories[p.category_id]
         dist = districts[p.district_id]

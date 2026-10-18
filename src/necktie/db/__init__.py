@@ -3,13 +3,13 @@
 from necktie.models import (
     Category,
     District,
+    Doctor,
     OperatingHour,
-    Practitioner,
 )
 
 __all__ = [
     "Category",
     "District",
     "OperatingHour",
-    "Practitioner",
+    "Doctor",
 ]

@@ -7,7 +7,7 @@ A Python package, to be served as an API and packaged with Docker.
 Hong Kong–specific rules that shape the data model and API:
 
 - **Hong Kong only.** Phone numbers are validated against the HK region, and only on create — reads return whatever is stored.
-- **One row per clinic.** A practitioner with multiple clinics is stored as one
+- **One row per clinic.** A doctor with multiple clinics is stored as one
   row per clinic (name clashes make deduplication unreliable), so there is no
   separate clinic table.
 - **Public holidays are all-or-nothing.** HK clinics either open or close on

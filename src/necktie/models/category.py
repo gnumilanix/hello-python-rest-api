@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from necktie.models.practitioner import Practitioner
+    from necktie.models.doctor import Doctor
 
 
 class Category(SQLModel, table=True):
@@ -17,4 +17,4 @@ class Category(SQLModel, table=True):
     name_yue: str
     name_zh: str
 
-    practitioners: list["Practitioner"] = Relationship(back_populates="category")
+    doctors: list["Doctor"] = Relationship(back_populates="category")

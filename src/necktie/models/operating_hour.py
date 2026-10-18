@@ -7,11 +7,11 @@ from sqlalchemy import CheckConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from necktie.models.practitioner import Practitioner
+    from necktie.models.doctor import Doctor
 
 
 class OperatingHour(SQLModel, table=True):
-    """One open/close interval for a practitioner."""
+    """One open/close interval for a doctor."""
 
     __tablename__ = "operating_hours"
     __table_args__ = (
@@ -19,9 +19,9 @@ class OperatingHour(SQLModel, table=True):
     )
 
     id: int | None = Field(default=None, primary_key=True)
-    practitioner_id: int = Field(foreign_key="practitioners.id", ondelete="CASCADE")
+    doctor_id: int = Field(foreign_key="doctors.id", ondelete="CASCADE")
     day_of_week: int
     open_time: time
     close_time: time
 
-    practitioner: "Practitioner" = Relationship(back_populates="operating_hours")
+    doctor: "Doctor" = Relationship(back_populates="operating_hours")

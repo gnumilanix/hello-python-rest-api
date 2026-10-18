@@ -6,12 +6,12 @@ serves Hong Kong only, so the language set is closed.
 
 from necktie.models.category import Category
 from necktie.models.district import District
+from necktie.models.doctor import Doctor
 from necktie.models.operating_hour import OperatingHour
-from necktie.models.practitioner import Practitioner
 
 __all__ = [
     "Category",
     "District",
     "OperatingHour",
-    "Practitioner",
+    "Doctor",
 ]

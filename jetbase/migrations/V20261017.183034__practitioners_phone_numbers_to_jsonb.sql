@@ -1,15 +1,15 @@
 -- upgrade
 
 -- Convert comma-separated TEXT to a JSONB array.
--- Practitioners have no seeded rows at this point, so a plain type change
+-- Doctors have no seeded rows at this point, so a plain type change
 -- with an empty-array default is sufficient.
-ALTER TABLE practitioners
+ALTER TABLE doctors
     ALTER COLUMN phone_numbers TYPE JSONB
     USING '[]'::jsonb;
 
 -- rollback
 
-ALTER TABLE practitioners
+ALTER TABLE doctors
     ALTER COLUMN phone_numbers TYPE TEXT
     USING CASE
         WHEN phone_numbers IS NULL THEN NULL

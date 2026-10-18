@@ -1,4 +1,4 @@
-"""Practitioner ORM model."""
+"""Doctor ORM model."""
 
 from typing import TYPE_CHECKING
 
@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from necktie.models.operating_hour import OperatingHour
 
 
-class Practitioner(SQLModel, table=True):
-    """A practitioner listing (see README "Domain assumptions")."""
+class Doctor(SQLModel, table=True):
+    """A doctor listing (see README "Domain assumptions")."""
 
-    __tablename__ = "practitioners"
+    __tablename__ = "doctors"
 
     id: int | None = Field(default=None, primary_key=True)
     category_id: int = Field(foreign_key="category.id")
@@ -37,8 +37,8 @@ class Practitioner(SQLModel, table=True):
     fee_detail_yue: str | None = None
     fee_detail_zh: str | None = None
 
-    category: "Category" = Relationship(back_populates="practitioners")
-    district: "District" = Relationship(back_populates="practitioners")
+    category: "Category" = Relationship(back_populates="doctors")
+    district: "District" = Relationship(back_populates="doctors")
     operating_hours: list["OperatingHour"] = Relationship(
-        back_populates="practitioner", cascade_delete=True
+        back_populates="doctor", cascade_delete=True
     )
