@@ -167,6 +167,9 @@ jobs:
       - uses: actions/checkout@v7
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         with:
           image-ref: "ghcr.io/gnumilanix/necktie:${{ github.sha }}"
           format: "sarif"
