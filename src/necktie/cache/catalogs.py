@@ -1,11 +1,10 @@
 """Redis-backed store for lazily loaded reference-data catalogs."""
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Coroutine, Iterable
 from typing import Generic, TypeVar
 
 from fastapi_cache import FastAPICache
 from pydantic import TypeAdapter
-from starlette.concurrency import run_in_threadpool
 
 from necktie.cache.lifespan import CACHE_TTL_SECONDS
 
@@ -19,7 +18,7 @@ class CatalogStore(Generic[EntryT]):
         self,
         key: str,
         adapter: TypeAdapter[list[EntryT]],
-        load: Callable[[], Iterable[EntryT]],
+        load: Callable[[], Coroutine[object, object, Iterable[EntryT]]],
     ) -> None:
         self.key = key
         self.adapter = adapter
@@ -31,7 +30,7 @@ class CatalogStore(Generic[EntryT]):
         cached = await backend.get(self.key)
         if cached is not None:
             return self.adapter.validate_json(cached)
-        entries = list(await run_in_threadpool(self.load))
+        entries = list(await self.load())
         await backend.set(
             self.key,
             self.adapter.dump_json(entries),

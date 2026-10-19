@@ -21,8 +21,12 @@ class DistrictService:
         self.catalog = CatalogStore(
             key="necktie:catalog:districts",
             adapter=TypeAdapter(list[DistrictCatalogEntry]),
-            load=lambda: [to_district_catalog_entry(d) for d in self.repo.find_all()],
+            load=self._load,
         )
+
+    async def _load(self) -> list[DistrictCatalogEntry]:
+        """Load all districts from the DB for the catalog."""
+        return [to_district_catalog_entry(d) for d in await self.repo.find_all()]
 
     async def list_districts(self, language: Language) -> list[DistrictSchema]:
         """List districts localized to ``language``, ordered by sort_order."""

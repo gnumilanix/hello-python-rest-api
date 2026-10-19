@@ -37,12 +37,13 @@ Hong Kong–specific rules that shape the data model and API:
 
 - **FastAPI** — typed JSON API: validation + OpenAPI docs come free from type
   annotations; async is first-class. Drawback: DI is implicit (resolved from
-  signatures), and async forces care around blocking calls (we offload DB work
-  via `run_in_threadpool`). Assumes read-heavy, JSON-only — a full-stack
-  framework (Django) would be overhead.
+  signatures). Assumes read-heavy, JSON-only — a full-stack framework (Django)
+  would be overhead.
 - **SQLModel + SQLAlchemy** — ORM models double as Pydantic-typed tables, so the
-  schema/ORM boundary stays typed. Drawback: type stubs fight mypy strict mode
-  (we scope mypy overrides to repositories/mappers).
+  schema/ORM boundary stays typed. The DB layer is fully async
+  (`sqlalchemy[asyncio]` + `AsyncSession`), so queries are native coroutines.
+  Drawback: type stubs fight mypy strict mode (we scope mypy overrides to
+  repositories/mappers).
 - **Pydantic** — the validation layer FastAPI builds on. We use its conventions:
   `Annotated[..., AfterValidator]`, built-in `Field` constraints over custom
   validators, per-domain input models. Kept to the schema layer (it's for
@@ -61,7 +62,6 @@ Hong Kong–specific rules that shape the data model and API:
 
 In rough priority order:
 
-- **Async DB driver** — drop `run_in_threadpool` by using `sqlalchemy[asyncio]`.
 - **Idempotency on create** — `POST /doctor[/batch]` are not idempotent; an
   `Idempotency-Key` header (claim in Redis, replay the stored response) would
   make retries safe.

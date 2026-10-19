@@ -2,7 +2,8 @@
 
 from collections.abc import Iterable
 
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from necktie.models import Category
 
@@ -10,10 +11,11 @@ from necktie.models import Category
 class CategoryRepository:
     """Read queries for the category table."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    def find_all(self) -> Iterable[Category]:
+    async def find_all(self) -> Iterable[Category]:
         """Return all categories ordered by id."""
         stmt = select(Category).order_by(Category.id)
-        return self.db.exec(stmt).all()
+        result = await self.db.exec(stmt)
+        return result.all()

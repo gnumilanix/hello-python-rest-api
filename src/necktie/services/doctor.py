@@ -1,7 +1,5 @@
 """Business logic for the doctor resource."""
 
-from starlette.concurrency import run_in_threadpool
-
 from necktie.mappers import DoctorMapper, to_doctor_orm
 from necktie.models import Doctor as DoctorEntity
 from necktie.repositories import DoctorRepository
@@ -48,8 +46,7 @@ class DoctorService:
         limit: int,
     ) -> list[Doctor]:
         """List doctors localized to ``language``, paginated."""
-        doctors = await run_in_threadpool(
-            self.repo.find_all,
+        doctors = await self.repo.find_all(
             language,
             district_id,
             category_id,
@@ -62,9 +59,7 @@ class DoctorService:
 
     async def get_doctor(self, doctor_id: int, language: Language) -> Doctor:
         """Get one doctor localized, raising DoctorNotFoundError if missing."""
-        doctor = await run_in_threadpool(
-            self.repo.find_by_id_localized, doctor_id, language
-        )
+        doctor = await self.repo.find_by_id_localized(doctor_id, language)
         if doctor is None:
             raise DoctorNotFoundError(doctor_id)
         return await self.mapper.to_doctor(doctor, language)
@@ -72,14 +67,14 @@ class DoctorService:
     async def create_doctor(self, payload: DoctorCreate) -> Doctor:
         """Create one doctor."""
         await self._validate(payload)
-        doctor = await run_in_threadpool(self._save, payload)
+        doctor = await self._save(payload)
         return await self.mapper.to_doctor(doctor, Language.default())
 
     async def create_doctors_batch(self, payloads: list[DoctorCreate]) -> list[Doctor]:
         """Create many doctors in one transaction."""
         for payload in payloads:
             await self._validate(payload)
-        doctors = await run_in_threadpool(self._save_all, payloads)
+        doctors = await self._save_all(payloads)
         return [await self.mapper.to_doctor(d, Language.default()) for d in doctors]
 
     async def _validate(self, payload: DoctorCreate) -> None:
@@ -89,16 +84,16 @@ class DoctorService:
         if not await self.districts.exists(payload.district_id):
             raise DistrictNotFoundError(payload.district_id)
 
-    def _save(self, payload: DoctorCreate) -> DoctorEntity:
-        """Build and insert one doctor (runs in a worker thread)."""
+    async def _save(self, payload: DoctorCreate) -> DoctorEntity:
+        """Build and insert one doctor."""
         doctor = to_doctor_orm(payload)
         self.repo.add_all([doctor])
-        self.repo.commit()
+        await self.repo.commit()
         return doctor
 
-    def _save_all(self, payloads: list[DoctorCreate]) -> list[DoctorEntity]:
-        """Build and insert many doctors in one transaction (worker thread)."""
+    async def _save_all(self, payloads: list[DoctorCreate]) -> list[DoctorEntity]:
+        """Build and insert many doctors in one transaction."""
         doctors = [to_doctor_orm(p) for p in payloads]
         self.repo.add_all(doctors)
-        self.repo.commit()
+        await self.repo.commit()
         return doctors

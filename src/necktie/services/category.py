@@ -21,8 +21,12 @@ class CategoryService:
         self.catalog = CatalogStore(
             key="necktie:catalog:categories",
             adapter=TypeAdapter(list[CategoryCatalogEntry]),
-            load=lambda: [to_category_catalog_entry(c) for c in self.repo.find_all()],
+            load=self._load,
         )
+
+    async def _load(self) -> list[CategoryCatalogEntry]:
+        """Load all categories from the DB for the catalog."""
+        return [to_category_catalog_entry(c) for c in await self.repo.find_all()]
 
     async def list_categories(self, language: Language) -> list[CategorySchema]:
         """List categories localized to ``language``."""

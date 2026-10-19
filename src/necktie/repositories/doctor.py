@@ -3,7 +3,8 @@
 from collections.abc import Iterable
 
 from sqlalchemy.orm import load_only, selectinload
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from necktie.models import Doctor
 from necktie.utils.languages import Language
@@ -12,10 +13,10 @@ from necktie.utils.languages import Language
 class DoctorRepository:
     """CRUD queries for the doctors table."""
 
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
-    def find_all(
+    async def find_all(
         self,
         language: Language,
         district_id: int | None,
@@ -56,9 +57,12 @@ class DoctorRepository:
         if max_fee is not None:
             stmt = stmt.where(Doctor.consultation_fee <= max_fee)
         stmt = stmt.order_by(Doctor.id).offset(offset).limit(limit)
-        return self.db.exec(stmt).all()
+        result = await self.db.exec(stmt)
+        return result.all()
 
-    def find_by_id_localized(self, doctor_id: int, language: Language) -> Doctor | None:
+    async def find_by_id_localized(
+        self, doctor_id: int, language: Language
+    ) -> Doctor | None:
         """Return one doctor loading only ``language``'s text columns.
 
         Non-translated columns are always loaded; the other two languages'
@@ -86,12 +90,13 @@ class DoctorRepository:
                 ),
             )
         )
-        return self.db.exec(stmt).first()
+        result = await self.db.exec(stmt)
+        return result.first()
 
     def add_all(self, doctors: Iterable[Doctor]) -> None:
         """Stage doctors for insert."""
         self.db.add_all(doctors)
 
-    def commit(self) -> None:
+    async def commit(self) -> None:
         """Commit the current transaction."""
-        self.db.commit()
+        await self.db.commit()

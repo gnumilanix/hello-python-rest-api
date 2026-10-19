@@ -1,11 +1,12 @@
 """Database engine and session management."""
 
 import os
-from collections.abc import Iterator
+from collections.abc import AsyncIterator
 from pathlib import Path
 
 from dotenv import load_dotenv
-from sqlmodel import Session, create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
@@ -16,10 +17,10 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"/{os.environ['POSTGRES_DB']}"
 )
 
-engine = create_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL)
 
 
-def get_db() -> Iterator[Session]:
-    """FastAPI dependency yielding a database session."""
-    with Session(engine, autoflush=False, expire_on_commit=False) as session:
+async def get_db() -> AsyncIterator[AsyncSession]:
+    """FastAPI dependency yielding an async database session."""
+    async with AsyncSession(engine, autoflush=False, expire_on_commit=False) as session:
         yield session
