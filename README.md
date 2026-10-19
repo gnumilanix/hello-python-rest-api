@@ -1,6 +1,6 @@
 # necktie
 
-Technical assessment for doctor search in Python.
+Technical assessment for implementing doctor API search in Python.
 
 ## Contents
 
@@ -15,9 +15,9 @@ Technical assessment for doctor search in Python.
 
 ## Domain assumptions
 
-Hong Kong–specific rules that shape the data model and API:
 
-- **Hong Kong only.** Phone numbers validated against the HK region, on create only.
+
+- **Hong Kong only.** Assuming the application is primarily for HK as the business only sells in HK and following YAGNI. So things like phone validation validates for HK
 - **One row per clinic.** A doctor with multiple clinics is stored once per
   clinic (name clashes make deduplication unreliable) — no separate clinic table.
 - **Public holidays are all-or-nothing.** HK clinics open or close on public
@@ -26,7 +26,7 @@ Hong Kong–specific rules that shape the data model and API:
 - **`place_id` is the Google Places ID** for a clinic, used for navigation.
 - **Day of week follows ISO 8601** (1 = Monday, 7 = Sunday) in `operating_hours`.
 - **Column-based translations.** Translatable fields are fixed `en`/`yue`/`zh`
-  columns. HK has three relevant languages and the company operates only in HK,
+  columns. HK has three relevant languages,
   so the set is closed — a translation table would add joins for no gain, and a
   TMS (Lokalise/Crowdin) is for developer-owned UI strings, not user-generated
   content: practitioner data arrives via the API at runtime, so a TMS would mean
@@ -48,7 +48,7 @@ Hong Kong–specific rules that shape the data model and API:
 - **phonenumbers** — a port of Google's libphonenumber, so phone validation
   covers a wide range of formats and stays current as numbering plans change,
   rather than a hand-rolled regex.
-- **Postgres + Redis** — Postgres for the relational model. Redis because, if we
+- **Postgres + Redis** — Postgres for the relational model, no specific reason for choosing between other databases. Redis because, if we
   deploy multiple app instances, they share the same cache rather than each
   holding its own.
 
@@ -60,17 +60,19 @@ In rough priority order:
   `Idempotency-Key` header (claim in Redis, replay the stored response) would
   make retries safe.
 - **PUT/PATCH/DELETE** — no way to update/delete a doctor yet.
+- **Auth** - POST endpoints should be authorized so only admins can create doctors
 - **Real Mandarin content** — `*_zh` is seeded as a copy of the Cantonese text.
 - **Search** — filtering is exact-match; name search would need full-text
   indexes (e.g. Elasticsearch).
+- **Plural endpoints**: Left endpoint to `doctor` instead of `doctors`. Using singular instead of standard REST API which should use plurals for all other APIs, in order to standardize across all endpoints.
 
 ## Production considerations
 
-- **Secrets** — `.env` is local-only; production uses a secrets manager.
+- **Secrets** — `.env` is local-only; production should use something like AWS secrets manager.
 - **Migrations as a deploy step** — run `jetbase upgrade` before rollout
   (initContainer / migration job), not in the app, so replicas don't race.
 - **Cache invalidation** — catalogs + response cache share a TTL; seed changes
-  take effect on expiry, so runtime reference-data edits need a cache clear.
+  take effect on expiry, so runtime reference-data edits need a cache clear. Generally we can use a flush endpoint for clearing cache
 - **Connection management** — per-process engine/Redis; pool sizing needs to be
   deliberate behind multiple ASGI workers.
 - **Observability** — add OpenTelemetry for traces/metrics/logs. It integrates
