@@ -17,25 +17,21 @@ Technical assessment for doctor search in Python.
 
 Hong Kong–specific rules that shape the data model and API:
 
-- **Hong Kong only.** Phone numbers are validated against the HK region, and only on create — reads return whatever is stored.
-- **One row per clinic.** A doctor with multiple clinics is stored as one
-  row per clinic (name clashes make deduplication unreliable), so there is no
-  separate clinic table.
-- **Public holidays are all-or-nothing.** HK clinics either open or close on
-  public holidays as a whole, regardless of which weekday a holiday falls on —
-  so `is_open_on_public_holidays` is a single flag, not per-day.
+- **Hong Kong only.** Phone numbers validated against the HK region, on create only.
+- **One row per clinic.** A doctor with multiple clinics is stored once per
+  clinic (name clashes make deduplication unreliable) — no separate clinic table.
+- **Public holidays are all-or-nothing.** HK clinics open or close on public
+  holidays as a whole, regardless of weekday — so `is_open_on_public_holidays`
+  is one flag, not per-day.
 - **`place_id` is the Google Places ID** for a clinic, used for navigation.
 - **Day of week follows ISO 8601** (1 = Monday, 7 = Sunday) in `operating_hours`.
-- **Column-based translations, not a translation table or a TMS.** Translatable
-  fields are fixed `en`/`yue`/`zh` columns on each table. HK has only three
-  relevant languages and the company operates only in HK, so the set is closed.
-  A separate translation table would add joins and a `language_code` key for no
-  gain at this scale. A translation-management system (Lokalise, Crowdin) is
-  built for developer-owned UI strings, not user-generated content: practitioner
-  data arrives via the API at runtime, so it can't live in a git-tracked catalog
-  — using one would mean writing each record twice (once through the API, once
-  to the TMS). Such tools only pay off for static UI/error strings, which this
-  API has none of.
+- **Column-based translations.** Translatable fields are fixed `en`/`yue`/`zh`
+  columns. HK has three relevant languages and the company operates only in HK,
+  so the set is closed — a translation table would add joins for no gain, and a
+  TMS (Lokalise/Crowdin) is for developer-owned UI strings, not user-generated
+  content: practitioner data arrives via the API at runtime, so a TMS would mean
+  writing each record twice (API + catalog). A TMS would only help for static
+  error strings, which this API has none of.
 
 ## Framework and library choices
 
@@ -54,6 +50,10 @@ Hong Kong–specific rules that shape the data model and API:
 - **Jetbase** — plain-SQL file-per-migration; no ORM autogeneration, so the
   schema is a readable spec. Drawback: a thin CLI with no startup hook (unlike
   Liquibase) — in production it runs as a deploy step.
+- **phonenumbers** — phone validation. A port of Google's libphonenumber, so it
+  validates a wide range of international number formats rather than a
+  hand-rolled regex, and its database is continuously updated as numbering plans
+  change. We validate against the HK region on create.
 - **Postgres + Redis** — Postgres for the relational model; Redis for the
   response cache and the lazily-loaded reference-data catalogs.
 
@@ -111,12 +111,7 @@ In rough priority order:
 
 ## Run and build
 
-There are three ways to run the app, depending on what you're doing.
-
 ### 1. Local development (deps in Docker, app on host)
-
-Fastest for iterative coding — the app runs in your venv with `--reload`,
-Postgres and Redis run in Docker:
 
 ```bash
 # one-time setup
@@ -130,36 +125,25 @@ docker compose up -d                                   # postgres + redis
 .venv/bin/uvicorn necktie.main:app --reload            # app on :8000
 ```
 
+Docs at http://localhost:8000/docs.
 
-### 2. Full stack in Docker (test the real image)
+### 2. Full stack in Docker
 
 Builds and runs the exact artifact CI produces:
 
 ```bash
 ./scripts/local.sh
-# or explicitly:
-docker compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
+# or: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build -d
 ```
 
-App on `http://localhost:${APP_PORT:-8000}`. Tear down with
-`docker compose -f docker-compose.yml -f docker-compose.local.yml down`.
-
-To run a pre-built GHCR image instead of building from source:
-
-```bash
-DOCKER_IMAGE=ghcr.io/gnumilanix/necktie:latest \
-  docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
-```
+App on `http://localhost:${APP_PORT:-8000}`. To run a pre-built GHCR image
+instead of building from source, set `DOCKER_IMAGE=ghcr.io/gnumilanix/necktie:latest`.
 
 ### 3. Tests and verification
 
 ```bash
-# tests (needs deps running)
-docker compose up -d
-.venv/bin/pytest
-
-# full local CI: lint + type-check + security scan + tests + Docker build
-./scripts/verify.sh
+docker compose up -d && .venv/bin/pytest               # tests (needs deps)
+./scripts/verify.sh                                    # full local CI
 ```
 
 ### Scripts
