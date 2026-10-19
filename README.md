@@ -61,8 +61,6 @@ In rough priority order:
   make retries safe.
 - **PUT/PATCH** — no way to update a doctor yet.
 - **Real Mandarin content** — `*_zh` is seeded as a copy of the Cantonese text.
-- **Observability** — no logging/metrics/tracing; FastAPI's OpenTelemetry would
-  be the addition.
 - **Search** — filtering is exact-match; name search would need full-text
   indexes (e.g. Elasticsearch).
 
@@ -75,6 +73,8 @@ In rough priority order:
   take effect on expiry, so runtime reference-data edits need a cache clear.
 - **Connection management** — per-process engine/Redis; pool sizing needs to be
   deliberate behind multiple ASGI workers.
+- **Observability** — add OpenTelemetry for traces/metrics/logs. It integrates
+  with AWS X-Ray for tracing and Prometheus/Grafana for metrics.
 - **Boundary validation** — schema constraints return 422, never a 500 from the
   DB; that contract should hold as the schema evolves.
 
