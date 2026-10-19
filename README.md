@@ -59,7 +59,7 @@ In rough priority order:
 - **Idempotency on create** — `POST /doctor[/batch]` are not idempotent; an
   `Idempotency-Key` header (claim in Redis, replay the stored response) would
   make retries safe.
-- **PUT/PATCH** — no way to update a doctor yet.
+- **PUT/PATCH/DELETE** — no way to update/delete a doctor yet.
 - **Real Mandarin content** — `*_zh` is seeded as a copy of the Cantonese text.
 - **Search** — filtering is exact-match; name search would need full-text
   indexes (e.g. Elasticsearch).
