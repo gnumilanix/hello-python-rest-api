@@ -171,18 +171,12 @@ docker compose up -d
 | `scripts/verify.sh` | Lint + mypy + bandit + pytest + Docker build |
 | `scripts/teardown.sh` | Stop containers, drop volumes, free the port, wipe venv/caches |
 
-## Lint and type-check
-
-```bash
-ruff check .
-ruff format --check .
-mypy src/
-```
-
 ## API
 
 Full API spec and doc available during run at http://localhost:8000/docs.
-Base URL: `/`. All read endpoints accept `?language=` (`en` | `yue` | `zh`, default `en`).
+
+- Base URL: `/`.
+- All read endpoints accept `?language=` (`en` | `yue` | `zh`, default `en`).
 
 ### `GET /district`
 
