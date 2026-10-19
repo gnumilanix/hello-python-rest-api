@@ -10,7 +10,7 @@ from necktie.mappers.district import (
     to_district,
     to_district_catalog_entry,
 )
-from necktie.mappers.doctor import DoctorMapper
+from necktie.mappers.doctor import DoctorMapper, to_doctor_orm
 from necktie.mappers.operating_hour import (
     to_operating_hour,
     to_operating_hour_orm,
@@ -24,6 +24,7 @@ __all__ = [
     "to_category_catalog_entry",
     "to_district",
     "to_district_catalog_entry",
+    "to_doctor_orm",
     "to_operating_hour",
     "to_operating_hour_orm",
 ]

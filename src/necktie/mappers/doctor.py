@@ -5,12 +5,13 @@ from typing import TYPE_CHECKING
 
 from necktie.mappers.category import CategoryCatalogEntry
 from necktie.mappers.district import DistrictCatalogEntry
-from necktie.mappers.operating_hour import to_operating_hour
+from necktie.mappers.operating_hour import to_operating_hour, to_operating_hour_orm
 from necktie.models import Doctor as DoctorEntity
 from necktie.schemas import (
     CategoryRef,
     DistrictRef,
     Doctor,
+    DoctorCreate,
 )
 from necktie.utils.languages import Language
 
@@ -49,6 +50,35 @@ def _pick_district(d: DistrictCatalogEntry, language: Language) -> str:
     if language is Language.ZH:
         return d.name_zh
     return d.name_en
+
+
+def to_doctor_orm(payload: DoctorCreate) -> DoctorEntity:
+    """Build a Doctor ORM object from a create payload.
+
+    Reference validity (category_id/district_id) is the service's job; this
+    is a pure schema→entity mapping.
+    """
+    return DoctorEntity(
+        category_id=payload.category_id,
+        district_id=payload.district_id,
+        place_id=payload.place_id,
+        phone_numbers=payload.phone_numbers,
+        member_exclusive_fee=payload.member_exclusive_fee,
+        consultation_fee=payload.consultation_fee,
+        is_open_on_public_holidays=payload.is_open_on_public_holidays,
+        name_en=payload.name.en,
+        name_yue=payload.name.yue,
+        name_zh=payload.name.zh,
+        address_en=payload.address.en,
+        address_yue=payload.address.yue,
+        address_zh=payload.address.zh,
+        fee_detail_en=payload.fee_detail.en,
+        fee_detail_yue=payload.fee_detail.yue,
+        fee_detail_zh=payload.fee_detail.zh,
+        operating_hours=[
+            to_operating_hour_orm(oh) for oh in payload.operating_hours
+        ],
+    )
 
 
 class DoctorMapper:
