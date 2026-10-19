@@ -2,6 +2,17 @@
 
 Technical assessment for doctor search in Python.
 
+## Contents
+
+- [Domain assumptions](#domain-assumptions)
+- [Framework and library choices](#framework-and-library-choices)
+- [Potential improvements](#potential-improvements)
+- [Production considerations](#production-considerations)
+- [Project structure](#project-structure)
+- [Run and build](#run-and-build)
+- [Lint and type-check](#lint-and-type-check)
+- [API](#api)
+
 ## Domain assumptions
 
 Hong Kong–specific rules that shape the data model and API:
@@ -119,7 +130,6 @@ docker compose up -d                                   # postgres + redis
 .venv/bin/uvicorn necktie.main:app --reload            # app on :8000
 ```
 
-Docs at http://localhost:8000/docs.
 
 ### 2. Full stack in Docker (test the real image)
 
@@ -171,6 +181,7 @@ mypy src/
 
 ## API
 
+Full API spec and doc available during run at http://localhost:8000/docs.
 Base URL: `/`. All read endpoints accept `?language=` (`en` | `yue` | `zh`, default `en`).
 
 ### `GET /district`
@@ -181,12 +192,17 @@ List all districts, ordered by `sort_order`, localized.
 GET /district?language=yue
 ```
 
+<details>
+<summary>Sample response</summary>
+
 ```json
 [
   { "sort_order": 1, "id": 1, "name": "中西區" },
   { "sort_order": 2, "id": 2, "name": "東區" }
 ]
 ```
+
+</details>
 
 ### `GET /category`
 
@@ -196,6 +212,9 @@ List all categories, ordered by id, localized.
 GET /category?language=en
 ```
 
+<details>
+<summary>Sample response</summary>
+
 ```json
 [
   { "name_key": "anaesthesiology", "id": 1, "name": "Anaesthesiology" },
@@ -203,16 +222,16 @@ GET /category?language=en
 ]
 ```
 
+</details>
+
 ### `GET /doctor`
 
 List doctors, filterable and paginated, localized.
 
 ```
 GET /doctor?language=zh&district=1&min_fee=100&max_fee=500&page=0&size=20
-```
-
-Query params: `language`, `district` (id), `category` (id), `min_fee`, `max_fee`,
-`page` (0-based), `size` (10–100, default 20).
+<details>
+<summary>Sample response</summary>
 
 ```json
 [
@@ -233,13 +252,18 @@ Query params: `language`, `district` (id), `category` (id), `min_fee`, `max_fee`
 ]
 ```
 
+</details> "address": "测试街1号",
+    "fee_detail": null,
+    "operating_hours": []
+  }
+]
+```
+
 ### `GET /doctor/{id}`
 
 Get one doctor localized to `language`. Returns 404 if the id does not exist.
-
-```
-GET /doctor/2?language=yue
-```
+<details>
+<summary>Sample response</summary>
 
 ```json
 {
@@ -258,6 +282,13 @@ GET /doctor/2?language=yue
 }
 ```
 
+</details>name": "測試醫生",
+  "address": "測試街1號",
+  "fee_detail": null,
+  "operating_hours": []
+}
+```
+
 ### `POST /doctor`
 
 Create one doctor. `name` and `address` require all three languages;
@@ -267,6 +298,9 @@ Create one doctor. `name` and `address` require all three languages;
 POST /doctor
 Content-Type: application/json
 ```
+
+<details>
+<summary>Sample payload</summary>
 
 ```json
 {
@@ -282,6 +316,8 @@ Content-Type: application/json
   ]
 }
 ```
+
+</details>
 
 Returns 201 with the created doctor (localized, default language). 400 if
 `category_id`/`district_id` is invalid; 422 if required fields are missing.
