@@ -7,9 +7,25 @@ from necktie.schemas.district import DistrictRef
 from necktie.schemas.locale import LocaleModel, NullableLocaleModel
 from necktie.schemas.operating_hour import (
     OperatingHour,
-    OperatingHourCreate,
+    OperatingHourInput,
 )
 from necktie.utils import DefaultPhoneList
+
+
+class DoctorNameInput(LocaleModel):
+    """A doctor's name, capped to the VARCHAR(255) columns."""
+
+    en: str = Field(min_length=1, max_length=255)
+    yue: str = Field(min_length=1, max_length=255)
+    zh: str = Field(min_length=1, max_length=255)
+
+
+class DoctorAddressInput(LocaleModel):
+    """A doctor's address in every supported language (TEXT columns, uncapped)."""
+
+
+class DoctorFeeDetailInput(NullableLocaleModel):
+    """A doctor's fee detail in any supported language (TEXT columns, uncapped)."""
 
 
 class DoctorBase(BaseModel):
@@ -40,9 +56,7 @@ class DoctorCreate(DoctorBase):
     category_id: int
     district_id: int
     phone_numbers: DefaultPhoneList
-    name: LocaleModel
-    address: LocaleModel
-    fee_detail: NullableLocaleModel = Field(
-        default_factory=NullableLocaleModel
-    )
-    operating_hours: list[OperatingHourCreate] = Field(default_factory=list)
+    name: DoctorNameInput
+    address: DoctorAddressInput
+    fee_detail: DoctorFeeDetailInput = Field(default_factory=DoctorFeeDetailInput)
+    operating_hours: list[OperatingHourInput] = Field(default_factory=list)

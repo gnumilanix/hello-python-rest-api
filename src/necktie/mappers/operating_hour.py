@@ -2,10 +2,10 @@
 
 from necktie.models import OperatingHour
 from necktie.schemas import OperatingHour as OperatingHourSchema
-from necktie.schemas import OperatingHourCreate
+from necktie.schemas import OperatingHourInput
 
 
-def to_operating_hour_orm(oh: OperatingHourCreate) -> OperatingHour:
+def to_operating_hour_orm(oh: OperatingHourInput) -> OperatingHour:
     """Build an OperatingHour ORM object from create payload.
 
     doctor_id is set by SQLAlchemy via the relationship on save.

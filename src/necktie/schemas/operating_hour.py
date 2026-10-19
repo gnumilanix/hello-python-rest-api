@@ -18,7 +18,7 @@ class OperatingHour(OperatingHourBase):
     day_of_week: int
 
 
-class OperatingHourCreate(OperatingHourBase):
+class OperatingHourInput(OperatingHourBase):
     """Operating hour supplied when creating a doctor."""
 
     day_of_week: int = Field(ge=1, le=7, description="ISO day: 1=Mon, 7=Sun")
