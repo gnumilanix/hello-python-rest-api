@@ -15,7 +15,7 @@ from necktie.utils import DefaultPhoneList
 class DoctorBase(BaseModel):
     """Shared doctor fields."""
 
-    place_id: str | None = None
+    place_id: str | None = Field(default=None, max_length=255)
     phone_numbers: list[str] = Field(min_length=1)
     member_exclusive_fee: int | None = None
     consultation_fee: int

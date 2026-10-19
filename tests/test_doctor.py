@@ -130,6 +130,16 @@ class TestCreateDoctor:
         response = client.post("/doctor", json=payload)
         assert response.status_code == 422
 
+    def test_overlong_place_id_rejected(self, client: TestClient) -> None:
+        payload = {**DOCTOR_PAYLOAD, "place_id": "x" * 256}
+        response = client.post("/doctor", json=payload)
+        assert response.status_code == 422
+
+    def test_overlong_name_rejected(self, client: TestClient) -> None:
+        payload = {**DOCTOR_PAYLOAD, "name": {"en": "x" * 256, "yue": "y", "zh": "z"}}
+        response = client.post("/doctor", json=payload)
+        assert response.status_code == 422
+
 
 class TestCreateDoctorsBatch:
     def test_batch_create(self, client: TestClient) -> None:
