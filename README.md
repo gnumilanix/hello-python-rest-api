@@ -77,6 +77,9 @@ In rough priority order:
   with AWS X-Ray for tracing and Prometheus/Grafana for metrics.
 - **Boundary validation** — schema constraints return 422, never a 500 from the
   DB; that contract should hold as the schema evolves.
+- **Branching** — follow a git workflow: separate branches for `test` and
+  `staging`, and a tag per released image so each environment deploys a known
+  build.
 
 ## Project structure
 
