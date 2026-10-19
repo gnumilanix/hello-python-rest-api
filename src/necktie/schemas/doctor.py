@@ -12,22 +12,6 @@ from necktie.schemas.operating_hour import (
 from necktie.utils import DefaultPhoneList
 
 
-class DoctorNameInput(LocaleModel):
-    """A doctor's name, capped to the VARCHAR(255) columns."""
-
-    en: str = Field(min_length=1, max_length=255)
-    yue: str = Field(min_length=1, max_length=255)
-    zh: str = Field(min_length=1, max_length=255)
-
-
-class DoctorAddressInput(LocaleModel):
-    """A doctor's address in every supported language (TEXT columns, uncapped)."""
-
-
-class DoctorFeeDetailInput(NullableLocaleModel):
-    """A doctor's fee detail in any supported language (TEXT columns, uncapped)."""
-
-
 class DoctorBase(BaseModel):
     """Shared doctor fields."""
 
@@ -48,6 +32,22 @@ class Doctor(DoctorBase):
     address: str
     fee_detail: str | None
     operating_hours: list[OperatingHour]
+
+
+class DoctorNameInput(LocaleModel):
+    """A doctor's name, capped to the VARCHAR(255) columns."""
+
+    en: str = Field(min_length=1, max_length=255)
+    yue: str = Field(min_length=1, max_length=255)
+    zh: str = Field(min_length=1, max_length=255)
+
+
+class DoctorAddressInput(LocaleModel):
+    """A doctor's address in every supported language (TEXT columns, uncapped)."""
+
+
+class DoctorFeeDetailInput(NullableLocaleModel):
+    """A doctor's fee detail in any supported language (TEXT columns, uncapped)."""
 
 
 class DoctorCreate(DoctorBase):

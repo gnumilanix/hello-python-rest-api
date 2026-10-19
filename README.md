@@ -17,7 +17,7 @@ Technical assessment for implementing doctor API search in Python.
 
 
 
-- **Hong Kong only.** Assuming the application is primarily for HK as the business only sells in HK and following YAGNI. So things like phone validation validates for HK
+- **Hong Kong only.** Assuming the application is primarily for HK as the business only sells in HK and following _YAGNI_. So things like phone validation validates for HK
 - **One row per clinic.** A doctor with multiple clinics is stored once per
   clinic (name clashes make deduplication unreliable) — no separate clinic table.
 - **Public holidays are all-or-nothing.** HK clinics open or close on public
