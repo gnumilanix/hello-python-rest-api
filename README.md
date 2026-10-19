@@ -90,7 +90,7 @@ In rough priority order:
 │       ├── mappers/            # ORM → schema serialization
 │       ├── models/             # SQLModel ORM entities
 │       ├── repositories/       # SQL data access
-│       ├── routers/            # FastAPI endpoints + DI
+│       ├── routers/            # FastAPI endpoints
 │       ├── schemas/            # Pydantic API models
 │       ├── services/           # Business logic
 │       └── utils/              # Enums, validators, constants
@@ -159,6 +159,7 @@ docker compose up -d
 | `scripts/local.sh` | Build and run the full stack in Docker |
 | `scripts/build.sh` | Build the Docker image (`necktie:local` or a tag arg) |
 | `scripts/verify.sh` | Lint + mypy + bandit + pytest + Docker build |
+| `scripts/teardown.sh` | Stop containers, drop volumes, free the port, wipe venv/caches |
 
 ## Lint and type-check
 

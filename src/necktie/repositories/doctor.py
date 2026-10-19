@@ -58,9 +58,7 @@ class DoctorRepository:
         stmt = stmt.order_by(Doctor.id).offset(offset).limit(limit)
         return self.db.exec(stmt).all()
 
-    def find_by_id_localized(
-        self, doctor_id: int, language: Language
-    ) -> Doctor | None:
+    def find_by_id_localized(self, doctor_id: int, language: Language) -> Doctor | None:
         """Return one doctor loading only ``language``'s text columns.
 
         Non-translated columns are always loaded; the other two languages'

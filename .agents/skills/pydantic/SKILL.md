@@ -27,11 +27,11 @@ from pydantic import BaseModel, Field
 
 class Person(BaseModel):
     name: str
-    age: int = Field(description='The age of the person')
+    age: int = Field(description="The age of the person")
     birthdate: date | None = None
 
 
-p = Person(name='John', age=20, birthdate='1970-01-01')
+p = Person(name="John", age=20, birthdate="1970-01-01")
 ```
 
 Pydantic coerces compatible input: the ISO date string `'1970-01-01'` is parsed
@@ -54,7 +54,7 @@ from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
-    first_name: str = Field(alias='name')
+    first_name: str = Field(alias="name")
 ```
 
 or using the annotated pattern:
@@ -111,11 +111,11 @@ class Model(BaseModel):
 
     constrained_int_bad: int
 
-    @field_validator('constrained_int_bad')  # bad
+    @field_validator("constrained_int_bad")  # bad
     @classmethod
     def validate(cls, v: int) -> int:
         if not v > 1:
-            raise ValueError('Value is not greater than 1')
+            raise ValueError("Value is not greater than 1")
         return v
 ```
 
@@ -151,7 +151,7 @@ from pydantic import AfterValidator, BaseModel, field_validator
 
 def is_even(value: int) -> int:
     if value % 2 == 1:
-        raise ValueError(f'{value} is not an even number')
+        raise ValueError(f"{value} is not an even number")
     return value
 
 
@@ -161,11 +161,11 @@ class Model(BaseModel):
     odd: int
 
     # If you use the decorator form, define it as a classmethod.
-    @field_validator('odd', mode='after')
+    @field_validator("odd", mode="after")
     @classmethod
     def is_odd(cls, value: int) -> int:
         if value % 2 == 0:
-            raise ValueError(f'{value} is not an odd number')
+            raise ValueError(f"{value} is not an odd number")
         return value
 ```
 
@@ -195,7 +195,7 @@ from pydantic import BaseModel
 
 
 class Model(BaseModel):
-    self_ref: 'Model'
+    self_ref: "Model"
 ```
 
 In Python >= 3.14, annotation evaluation is deferred, so you should not use string
@@ -209,20 +209,24 @@ Don't define recursive aliases as quoted `TypeAlias`:
 from typing import TypeAlias
 
 # Pydantic generally can't evaluate this:
-JsonValue: TypeAlias = 'list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None'
+JsonValue: TypeAlias = (
+    "list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None"
+)
 ```
 
 Use an explicit type alias (`type` on Python 3.12+, or `TypeAliasType`):
 
 ```python
-type JsonValue = list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None
+type JsonValue = (
+    list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None
+)
 
 # Or, if not on Python >= 3.12:
 from typing_extensions import TypeAliasType
 
 JsonValue = TypeAliasType(
-    'JsonValue',
-    'list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None',
+    "JsonValue",
+    "list[JsonValue] | dict[str, JsonValue] | str | bool | int | float | None",
 )
 ```
 
@@ -246,7 +250,7 @@ class Main(BaseModel):
     model: Base
 
 
-m = Main(model=Sub1(base_field=1, sub1_field='test'))
+m = Main(model=Sub1(base_field=1, sub1_field="test"))
 m.model_dump()
 # {'model': {'base_field': 1}}  -> sub1_field missing!
 ```
@@ -263,16 +267,16 @@ from pydantic import BaseModel, Field
 
 
 class Sub1(Base):
-    type: Literal['sub1']
+    type: Literal["sub1"]
     sub1_field: str
 
 
 class Sub2(Base):
-    type: Literal['sub2']
+    type: Literal["sub2"]
     sub2_field: bool
 
 
-Subs: TypeAlias = Annotated[Sub1 | Sub2, Field(discriminator='type')]
+Subs: TypeAlias = Annotated[Sub1 | Sub2, Field(discriminator="type")]
 
 
 class Main(BaseModel):

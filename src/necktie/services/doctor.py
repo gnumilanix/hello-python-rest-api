@@ -75,16 +75,12 @@ class DoctorService:
         doctor = await run_in_threadpool(self._save, payload)
         return await self.mapper.to_doctor(doctor, Language.default())
 
-    async def create_doctors_batch(
-        self, payloads: list[DoctorCreate]
-    ) -> list[Doctor]:
+    async def create_doctors_batch(self, payloads: list[DoctorCreate]) -> list[Doctor]:
         """Create many doctors in one transaction."""
         for payload in payloads:
             await self._validate(payload)
         doctors = await run_in_threadpool(self._save_all, payloads)
-        return [
-            await self.mapper.to_doctor(d, Language.default()) for d in doctors
-        ]
+        return [await self.mapper.to_doctor(d, Language.default()) for d in doctors]
 
     async def _validate(self, payload: DoctorCreate) -> None:
         """Check the referenced category and district against the catalogs."""

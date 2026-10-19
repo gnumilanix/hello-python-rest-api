@@ -18,32 +18,24 @@ class TestListDoctors:
         assert doctor["district"]["name"] == "Central and Western"
 
     def test_localized_cantonese(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get(
-            "/doctor", params={"language": "yue", "size": self.SIZE}
-        )
+        response = client.get("/doctor", params={"language": "yue", "size": self.SIZE})
         assert response.status_code == 200
         doctor = next(d for d in response.json() if d["id"] == doctor_id)
         assert doctor["name"] == "測試醫生"
         assert doctor["district"]["name"] == "中西區"
 
     def test_localized_mandarin(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get(
-            "/doctor", params={"language": "zh", "size": self.SIZE}
-        )
+        response = client.get("/doctor", params={"language": "zh", "size": self.SIZE})
         assert response.status_code == 200
         doctor = next(d for d in response.json() if d["id"] == doctor_id)
         assert doctor["name"] == "测试医生"
 
     def test_filter_by_district(self, client: TestClient, doctor_id: int) -> None:
-        response = client.get(
-            "/doctor", params={"district": 1, "size": self.SIZE}
-        )
+        response = client.get("/doctor", params={"district": 1, "size": self.SIZE})
         assert response.status_code == 200
         assert any(d["id"] == doctor_id for d in response.json())
         # A district with no doctors returns empty.
-        response = client.get(
-            "/doctor", params={"district": 18, "size": self.SIZE}
-        )
+        response = client.get("/doctor", params={"district": 18, "size": self.SIZE})
         assert response.status_code == 200
         assert not any(d["id"] == doctor_id for d in response.json())
 

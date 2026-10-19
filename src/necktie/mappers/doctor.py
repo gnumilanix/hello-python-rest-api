@@ -75,9 +75,7 @@ def to_doctor_orm(payload: DoctorCreate) -> DoctorEntity:
         fee_detail_en=payload.fee_detail.en,
         fee_detail_yue=payload.fee_detail.yue,
         fee_detail_zh=payload.fee_detail.zh,
-        operating_hours=[
-            to_operating_hour_orm(oh) for oh in payload.operating_hours
-        ],
+        operating_hours=[to_operating_hour_orm(oh) for oh in payload.operating_hours],
     )
 
 

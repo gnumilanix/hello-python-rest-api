@@ -38,4 +38,3 @@ DefaultPhoneList = Annotated[
     ),
     AfterValidator(_validate_default_phone_numbers),
 ]
-

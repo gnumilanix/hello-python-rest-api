@@ -31,9 +31,7 @@ def request_key_builder(
     if request is None:
         raise ValueError("request is required for cache key building")
     # multi_items() preserves repeated params (e.g. ?lang=en&lang=zh).
-    items = "&".join(
-        f"{k}={v}" for k, v in sorted(request.query_params.multi_items())
-    )
+    items = "&".join(f"{k}={v}" for k, v in sorted(request.query_params.multi_items()))
     return f"{namespace}:{request.url.path}?{items}"
 
 

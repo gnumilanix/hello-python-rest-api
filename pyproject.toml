@@ -23,6 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "bandit>=1.7",
     "httpx",
     "mypy>=1.0",
     "pytest>=8.0",
