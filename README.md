@@ -15,6 +15,16 @@ Hong Kong–specific rules that shape the data model and API:
   so `is_open_on_public_holidays` is a single flag, not per-day.
 - **`place_id` is the Google Places ID** for a clinic, used for navigation.
 - **Day of week follows ISO 8601** (1 = Monday, 7 = Sunday) in `operating_hours`.
+- **Column-based translations, not a translation table or a TMS.** Translatable
+  fields are fixed `en`/`yue`/`zh` columns on each table. HK has only three
+  relevant languages and the company operates only in HK, so the set is closed.
+  A separate translation table would add joins and a `language_code` key for no
+  gain at this scale. A translation-management system (Lokalise, Crowdin) is
+  built for developer-owned UI strings, not user-generated content: practitioner
+  data arrives via the API at runtime, so it can't live in a git-tracked catalog
+  — using one would mean writing each record twice (once through the API, once
+  to the TMS). Such tools only pay off for static UI/error strings, which this
+  API has none of.
 
 ## Framework and library choices
 
