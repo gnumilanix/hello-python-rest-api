@@ -112,7 +112,7 @@ class DoctorMapper:
         """Serialize a doctor to a localized doctor (single language).
 
         Category and district names resolve from the Redis catalogs. The
-        practitioner entity is expected to have only ``language``'s text
+        doctor entity is expected to have only ``language``'s text
         columns loaded (find_by_id_localized).
         """
         districts, categories = await self._catalogs()
