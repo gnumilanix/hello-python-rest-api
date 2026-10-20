@@ -67,6 +67,9 @@ In rough priority order:
 ## Production considerations
 
 - **Secrets** — `.env` is local-only; production should use something like AWS secrets manager.
+- **CORS** — `CORS_ORIGINS` is a comma-separated allowlist (defaults to `*`
+  for local dev). Set it per environment so one build serves multiple domains,
+  e.g. `CORS_ORIGINS=https://app.example.com,https://admin.example.com`.
 - **Migrations as a deploy step** — run `jetbase upgrade` before rollout
   (initContainer / migration job), not in the app, so replicas don't race.
 - **Cache invalidation** — catalogs + response cache share a TTL; seed changes

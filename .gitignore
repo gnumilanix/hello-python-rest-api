@@ -24,3 +24,6 @@ htmlcov/
 # IDE
 .idea/
 .vscode/
+
+# Throwaway prototype
+prototype.html
