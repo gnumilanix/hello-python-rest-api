@@ -109,6 +109,15 @@ In rough priority order:
 └── tests/                      # Test suite
 ```
 
+### Scripts
+
+| Script | What it does |
+|---|---|
+| `scripts/local.sh` | Build and run the full stack in Docker |
+| `scripts/build.sh` | Build the Docker image (`necktie:local` or a tag arg) |
+| `scripts/verify.sh` | Lint + mypy + bandit + pytest + Docker build |
+| `scripts/teardown.sh` | Stop containers, drop volumes, free the port, wipe venv/caches |
+
 ## Run and build
 
 ### 1. Local development (deps in Docker, app on host)
@@ -145,15 +154,6 @@ instead of building from source, set `DOCKER_IMAGE=ghcr.io/gnumilanix/necktie:la
 docker compose up -d && .venv/bin/pytest               # tests (needs deps)
 ./scripts/verify.sh                                    # full local CI
 ```
-
-### Scripts
-
-| Script | What it does |
-|---|---|
-| `scripts/local.sh` | Build and run the full stack in Docker |
-| `scripts/build.sh` | Build the Docker image (`necktie:local` or a tag arg) |
-| `scripts/verify.sh` | Lint + mypy + bandit + pytest + Docker build |
-| `scripts/teardown.sh` | Stop containers, drop volumes, free the port, wipe venv/caches |
 
 ## API
 
