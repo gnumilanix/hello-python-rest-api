@@ -5,12 +5,15 @@ The resource is exposed as ``/doctor`` while the underlying table is
 handles HTTP concerns (params, status codes, error mapping).
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi_cache import FastAPICache
 from fastapi_cache.decorator import cache
 
 from necktie.routers.deps import get_doctor_service
 from necktie.schemas import Doctor, DoctorCreate
+from necktie.schemas.doctor import DoctorPatch
 from necktie.services import (
     CategoryNotFoundError,
     DistrictNotFoundError,
@@ -71,6 +74,54 @@ async def create_doctor(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e)) from None
     await FastAPICache.clear(namespace="doctor")
     return result
+
+
+@router.put("/{doctor_id}")
+async def replace_doctor(
+    doctor_id: int,
+    payload: DoctorCreate,
+    service: Annotated[DoctorService, Depends(get_doctor_service)],
+) -> Doctor:
+    """Replace an existing listing; omitted optional fields reset to defaults."""
+    try:
+        result = await service.update_doctor(doctor_id, payload)
+    except DoctorNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
+    except (CategoryNotFoundError, DistrictNotFoundError) as error:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(error)) from None
+    await FastAPICache.clear(namespace="doctor")
+    return result
+
+
+@router.patch("/{doctor_id}")
+async def patch_doctor(
+    doctor_id: int,
+    payload: DoctorPatch,
+    service: Annotated[DoctorService, Depends(get_doctor_service)],
+) -> Doctor:
+    """Update supplied fields and translations of an existing listing."""
+    try:
+        result = await service.update_doctor(doctor_id, payload)
+    except DoctorNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
+    except (CategoryNotFoundError, DistrictNotFoundError) as error:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(error)) from None
+    await FastAPICache.clear(namespace="doctor")
+    return result
+
+
+@router.delete("/{doctor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_doctor(
+    doctor_id: int,
+    service: Annotated[DoctorService, Depends(get_doctor_service)],
+) -> Response:
+    """Delete an existing listing and its hours."""
+    try:
+        await service.delete_doctor(doctor_id)
+    except DoctorNotFoundError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Doctor not found") from None
+    await FastAPICache.clear(namespace="doctor")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post(

@@ -19,7 +19,7 @@ def to_operating_hour_orm(oh: OperatingHourInput) -> OperatingHour:
 
 
 def to_operating_hour(oh: OperatingHour) -> OperatingHourSchema:
-    """Serialize an operating hour with the ISO day number."""
+    """Serialize an operating hour with a named weekday."""
     return OperatingHourSchema(
         day_of_week=oh.day_of_week,
         open_time=oh.open_time,

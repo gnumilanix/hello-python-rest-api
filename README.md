@@ -1,6 +1,6 @@
 # necktie
 
-Technical assessment for implementing doctor API search in Python.
+Rest API in Python for doctor search.
 
 ## Contents
 
@@ -10,7 +10,6 @@ Technical assessment for implementing doctor API search in Python.
 - [Production considerations](#production-considerations)
 - [Project structure](#project-structure)
 - [Run and build](#run-and-build)
-- [Lint and type-check](#lint-and-type-check)
 - [API](#api)
 
 ## Domain assumptions
@@ -24,7 +23,10 @@ Technical assessment for implementing doctor API search in Python.
   holidays as a whole, regardless of weekday — so `is_open_on_public_holidays`
   is one flag, not per-day.
 - **`place_id` is the Google Places ID** for a clinic, used for navigation.
-- **Day of week follows ISO 8601** (1 = Monday, 7 = Sunday) in `operating_hours`.
+- **Named weekdays.** `operating_hours.day_of_week` is a `DayOfWeek` string
+  enum in Python and the API: `monday`, `tuesday`, `wednesday`, `thursday`,
+  `friday`, `saturday`, `sunday`. The database retains ISO 8601 integers
+  (1 = Monday, 7 = Sunday); the ORM converts them to and from enum values.
 - **Column-based translations.** Translatable fields are fixed `en`/`yue`/`zh`
   columns. HK has three relevant languages,
   so the set is closed — a translation table would add joins for no gain, and a
@@ -57,8 +59,9 @@ In rough priority order:
 - **Idempotency on create** — `POST /doctor[/batch]` are not idempotent; an
   `Idempotency-Key` header (claim in Redis, replay the stored response) would
   make retries safe.
-- **PUT/PATCH/DELETE** — no way to update/delete a doctor yet.
-- **Auth** - POST endpoints should be authorized so only admins can create doctors
+- **Auth** - authorize all write endpoints (POST, PUT, PATCH, DELETE) so only
+  admins can create, edit, or delete listings.
+- **Concurrent edits** - add version checks or ETags to prevent lost updates.
 - **Real Mandarin content** — `*_zh` is seeded as a copy of the Cantonese text.
 - **Search** — filtering is exact-match; name search would need full-text
   indexes (e.g. Elasticsearch).
@@ -73,7 +76,12 @@ In rough priority order:
 - **Migrations as a deploy step** — run `jetbase upgrade` before rollout
   (initContainer / migration job), not in the app, so replicas don't race.
 - **Cache invalidation** — catalogs + response cache share a TTL; seed changes
-  take effect on expiry, so runtime reference-data edits need a cache clear. Generally we can use a flush endpoint for clearing cache
+  take effect on expiry, so direct database edits need a cache clear. All doctor
+  write endpoints invalidate cached doctor lists and details after committing.
+  The weekday change from numbers to strings is an API breaking change: update
+  clients and invalidate existing doctor response caches during rollout. Existing
+  database rows need no migration. A future cache-clear endpoint must require
+  authorization.
 - **Connection management** — per-process engine/Redis; pool sizing needs to be
   deliberate behind multiple ASGI workers.
 - **Observability** — add OpenTelemetry for traces/metrics/logs. It integrates
@@ -161,6 +169,9 @@ Full API spec and doc available during run at http://localhost:8000/docs.
 
 - Base URL: `/`.
 - All read endpoints accept `?language=` (`en` | `yue` | `zh`, default `en`).
+- Create, PUT, and PATCH responses are localized to English.
+- Operating-hour requests and responses use named weekday enum values, not
+  numbers. For example, `"day_of_week": "monday"`; `1` is rejected with 422.
 
 ### `GET /district`
 
@@ -208,6 +219,8 @@ List doctors, filterable and paginated, localized.
 
 ```
 GET /doctor?language=zh&district=1&min_fee=100&max_fee=500&page=0&size=20
+```
+
 <details>
 <summary>Sample response</summary>
 
@@ -280,7 +293,7 @@ Content-Type: application/json
   "address": { "en": "1 Test St", "yue": "測試街1號", "zh": "测试街1号" },
   "fee_detail": { "en": "Mon–Fri" },
   "operating_hours": [
-    { "day_of_week": 1, "open_time": "09:00", "close_time": "18:00" }
+    { "day_of_week": "monday", "open_time": "09:00", "close_time": "18:00" }
   ]
 }
 ```
@@ -295,10 +308,58 @@ Returns 201 with the created doctor (localized, default language). 400 if
 Create many doctors in one transaction. Body is a JSON array of the same
 `POST /doctor` payload. Returns 201 with the created list.
 
+### `PUT /doctor/{id}`
+
+Replace an existing listing using the same body as `POST /doctor`. Required
+fields, including all name and address translations, must be supplied. The ID
+does not change. Omitted optional fields reset to their defaults: for example,
+`operating_hours` becomes `[]`, `member_exclusive_fee` and fee details become
+null, and `is_open_on_public_holidays` becomes false. Hours are replaced, not
+appended. Returns 200 with the updated doctor, or 404 if the ID does not exist;
+PUT does not create missing listings.
+
+### `PATCH /doctor/{id}`
+
+Update only supplied fields. Omitted fields and translations are preserved.
+Phone-number and operating-hour lists replace the entire existing list; an empty
+hours list clears the schedule. An empty object is a no-op. Unknown top-level
+fields are rejected with 422.
+
+```http
+PATCH /doctor/1
+Content-Type: application/json
+```
+
+```json
+{
+  "consultation_fee": 400,
+  "name": { "en": "Dr Updated" },
+  "phone_numbers": ["23456789", "91234567"],
+  "member_exclusive_fee": null,
+  "is_open_on_public_holidays": false,
+  "operating_hours": [
+    { "day_of_week": "saturday", "open_time": "09:00", "close_time": "18:00" },
+    { "day_of_week": "sunday", "open_time": "10:00", "close_time": "17:00" }
+  ]
+}
+```
+
+`place_id` and `member_exclusive_fee` can be cleared with null. Set
+`fee_detail` to null to clear all translations, or send e.g.
+`"fee_detail": {"en": null}` to clear only the English text. Required fields
+such as name, address, consultation fee, and phone numbers cannot be set to
+null. Supplied names, addresses, phone numbers, and references are validated as
+on create. Returns 200 with the updated doctor, or 404 if not found.
+
+### `DELETE /doctor/{id}`
+
+Permanently delete a listing and its operating hours. Returns 204 with no body,
+or 404 if the listing does not exist (including repeated deletes).
+
 ### Errors
 
 | Status | When |
 |---|---|
-| 400 | Invalid `category_id` / `district_id` on create |
-| 404 | `GET /doctor/{id}` with an unknown id |
-| 422 | Validation failure (missing required field, bad phone number, unknown `language`) |
+| 400 | Invalid `category_id` / `district_id` on create or update |
+| 404 | GET, PUT, PATCH, or DELETE for an unknown doctor ID |
+| 422 | Validation failure (missing required field, bad phone number, invalid weekday, unknown `language`, invalid PATCH) |

@@ -1,12 +1,17 @@
 """Unit tests for the language-picker helpers in the doctor mapper (no infra)."""
 
+from datetime import time
+
 import pytest
 from pydantic import ValidationError
 
 from necktie.mappers.category import CategoryCatalogEntry
 from necktie.mappers.district import DistrictCatalogEntry
 from necktie.mappers.doctor import _pick_category, _pick_district
+from necktie.mappers.operating_hour import to_operating_hour, to_operating_hour_orm
 from necktie.schemas.locale import LocaleModel, NullableLocaleModel
+from necktie.schemas.operating_hour import OperatingHourInput
+from necktie.utils.day_of_week import DayOfWeek
 from necktie.utils.languages import Language
 
 
@@ -46,6 +51,23 @@ class TestPickDistrict:
 
     def test_mandarin(self) -> None:
         assert _pick_district(_district(), Language.ZH) == "中西区"
+
+
+class TestWeekdayMapper:
+    @pytest.mark.parametrize("day", list(DayOfWeek))
+    def test_preserves_enum_through_mapping(self, day: DayOfWeek) -> None:
+        payload = OperatingHourInput(
+            day_of_week=day, open_time=time(9), close_time=time(18)
+        )
+        entity = to_operating_hour_orm(payload)
+        assert entity.day_of_week is day
+        assert to_operating_hour(entity).day_of_week is day
+        assert DayOfWeek.from_iso(day.iso_number) is day
+
+    @pytest.mark.parametrize("number", [0, 8, -1])
+    def test_invalid_iso_number(self, number: int) -> None:
+        with pytest.raises(ValueError):
+            DayOfWeek.from_iso(number)
 
 
 class TestLocaleModel:

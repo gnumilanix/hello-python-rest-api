@@ -93,6 +93,19 @@ class DoctorRepository:
         result = await self.db.exec(stmt)
         return result.first()
 
+    async def find_by_id(self, doctor_id: int) -> Doctor | None:
+        """Load every translation and the hours for a mutation."""
+        result = await self.db.exec(
+            select(Doctor)
+            .where(Doctor.id == doctor_id)
+            .options(selectinload(Doctor.operating_hours))
+        )
+        return result.first()
+
+    async def delete(self, doctor: Doctor) -> None:
+        """Stage deletion of a doctor and its operating hours."""
+        await self.db.delete(doctor)
+
     def add_all(self, doctors: Iterable[Doctor]) -> None:
         """Stage doctors for insert."""
         self.db.add_all(doctors)

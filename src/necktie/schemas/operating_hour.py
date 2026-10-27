@@ -2,7 +2,9 @@
 
 from datetime import time
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
+from necktie.utils.day_of_week import DayOfWeek
 
 
 class OperatingHourBase(BaseModel):
@@ -13,12 +15,12 @@ class OperatingHourBase(BaseModel):
 
 
 class OperatingHour(OperatingHourBase):
-    """Operating hour in responses (ISO day number)."""
+    """Operating hour in responses with a named weekday."""
 
-    day_of_week: int
+    day_of_week: DayOfWeek
 
 
 class OperatingHourInput(OperatingHourBase):
     """Operating hour supplied when creating a doctor."""
 
-    day_of_week: int = Field(ge=1, le=7, description="ISO day: 1=Mon, 7=Sun")
+    day_of_week: DayOfWeek
