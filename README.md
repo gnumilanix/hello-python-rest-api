@@ -1,5 +1,8 @@
 # necktie
 
+[![CI](https://github.com/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/branch/main/graph/badge.svg)](https://codecov.io/gh/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment)
+
 Rest API in Python for doctor search.
 
 ## Contents
@@ -161,6 +164,19 @@ instead of building from source, set `DOCKER_IMAGE=ghcr.io/gnumilanix/necktie:la
 docker compose up -d && .venv/bin/pytest               # tests (needs deps)
 ./scripts/verify.sh                                    # full local CI
 ```
+
+Generate the same coverage report used in CI:
+
+```bash
+.venv/bin/pytest -q --cov=necktie --cov-report=term-missing --cov-report=xml:coverage.xml
+```
+
+CI uploads coverage to Codecov using GitHub OIDC (no `CODECOV_TOKEN` secret).
+Activate this repository in Codecov before the first upload. The coverage checks
+require at least 80% overall and 100% on changed lines, as configured in
+`codecov.yml`. Trivy image scan results are uploaded as SARIF to GitHub's
+Security > Code scanning view using the CodeQL upload action; this does not run
+a separate CodeQL source analysis.
 
 ## API
 

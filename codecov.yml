@@ -1,0 +1,14 @@
+codecov:
+  branch: main
+  ci_id_fallback_behavior: latest
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 0%
+    patch:
+      default:
+        target: 100%
+        threshold: 0%
