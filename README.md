@@ -56,7 +56,7 @@ Rest API in Python for doctor search.
 
 In rough priority order:
 
-- **Idempotency on create** — `POST /doctor[/batch]` are not idempotent; an
+- **Idempotency on create** — `POST /doctors[/batch]` are not idempotent; an
   `Idempotency-Key` header (claim in Redis, replay the stored response) would
   make retries safe.
 - **Auth** - authorize all write endpoints (POST, PUT, PATCH, DELETE) so only
@@ -65,7 +65,6 @@ In rough priority order:
 - **Real Mandarin content** — `*_zh` is seeded as a copy of the Cantonese text.
 - **Search** — filtering is exact-match; name search would need full-text
   indexes (e.g. Elasticsearch).
-- **Plural endpoints**: Left endpoint to `doctor` instead of `doctors`. Using singular instead of standard REST API which should use plurals for all other APIs, in order to standardize across all endpoints.
 
 ## Production considerations
 
@@ -168,6 +167,9 @@ docker compose up -d && .venv/bin/pytest               # tests (needs deps)
 Full API spec and doc available during run at http://localhost:8000/docs.
 
 - Base URL: `/`.
+- Doctor endpoints use `/doctors`, including `/doctors/{id}` and
+  `/doctors/batch`. The former singular URLs are no longer registered; clients
+  must update their paths.
 - All read endpoints accept `?language=` (`en` | `yue` | `zh`, default `en`).
 - Create, PUT, and PATCH responses are localized to English.
 - Operating-hour requests and responses use named weekday enum values, not
@@ -213,12 +215,12 @@ GET /category?language=en
 
 </details>
 
-### `GET /doctor`
+### `GET /doctors`
 
 List doctors, filterable and paginated, localized.
 
 ```
-GET /doctor?language=zh&district=1&min_fee=100&max_fee=500&page=0&size=20
+GET /doctors?language=zh&district=1&min_fee=100&max_fee=500&page=0&size=20
 ```
 
 <details>
@@ -245,7 +247,7 @@ GET /doctor?language=zh&district=1&min_fee=100&max_fee=500&page=0&size=20
 
 </details>
 
-### `GET /doctor/{id}`
+### `GET /doctors/{id}`
 
 Get one doctor localized to `language`. Returns 404 if the id does not exist.
 <details>
@@ -270,13 +272,13 @@ Get one doctor localized to `language`. Returns 404 if the id does not exist.
 
 </details>
 
-### `POST /doctor`
+### `POST /doctors`
 
 Create one doctor. `name` and `address` require all three languages;
 `fee_detail` is optional per language. Phone numbers are validated (HK region).
 
 ```
-POST /doctor
+POST /doctors
 Content-Type: application/json
 ```
 
@@ -303,14 +305,14 @@ Content-Type: application/json
 Returns 201 with the created doctor (localized, default language). 400 if
 `category_id`/`district_id` is invalid; 422 if required fields are missing.
 
-### `POST /doctor/batch`
+### `POST /doctors/batch`
 
 Create many doctors in one transaction. Body is a JSON array of the same
-`POST /doctor` payload. Returns 201 with the created list.
+`POST /doctors` payload. Returns 201 with the created list.
 
-### `PUT /doctor/{id}`
+### `PUT /doctors/{id}`
 
-Replace an existing listing using the same body as `POST /doctor`. Required
+Replace an existing listing using the same body as `POST /doctors`. Required
 fields, including all name and address translations, must be supplied. The ID
 does not change. Omitted optional fields reset to their defaults: for example,
 `operating_hours` becomes `[]`, `member_exclusive_fee` and fee details become
@@ -318,7 +320,7 @@ null, and `is_open_on_public_holidays` becomes false. Hours are replaced, not
 appended. Returns 200 with the updated doctor, or 404 if the ID does not exist;
 PUT does not create missing listings.
 
-### `PATCH /doctor/{id}`
+### `PATCH /doctors/{id}`
 
 Update only supplied fields. Omitted fields and translations are preserved.
 Phone-number and operating-hour lists replace the entire existing list; an empty
@@ -326,7 +328,7 @@ hours list clears the schedule. An empty object is a no-op. Unknown top-level
 fields are rejected with 422.
 
 ```http
-PATCH /doctor/1
+PATCH /doctors/1
 Content-Type: application/json
 ```
 
@@ -351,7 +353,7 @@ such as name, address, consultation fee, and phone numbers cannot be set to
 null. Supplied names, addresses, phone numbers, and references are validated as
 on create. Returns 200 with the updated doctor, or 404 if not found.
 
-### `DELETE /doctor/{id}`
+### `DELETE /doctors/{id}`
 
 Permanently delete a listing and its operating hours. Returns 204 with no body,
 or 404 if the listing does not exist (including repeated deletes).

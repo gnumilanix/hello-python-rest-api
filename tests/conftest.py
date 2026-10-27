@@ -28,6 +28,6 @@ def client() -> Iterator[TestClient]:
 @pytest.fixture(scope="session")
 def doctor_id(client: TestClient) -> int:
     """Create one doctor and return its id, for detail/get tests."""
-    response = client.post("/doctor", json=DOCTOR_PAYLOAD)
+    response = client.post("/doctors", json=DOCTOR_PAYLOAD)
     assert response.status_code == 201
     return response.json()["id"]

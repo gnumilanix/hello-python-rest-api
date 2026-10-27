@@ -10,7 +10,7 @@ def _request(query_string: bytes = b"") -> Request:
     scope = {
         "type": "http",
         "method": "GET",
-        "path": "/doctor",
+        "path": "/doctors",
         "query_string": query_string,
         "headers": [],
     }
@@ -20,13 +20,13 @@ def _request(query_string: bytes = b"") -> Request:
 class TestRequestKeyBuilder:
     def test_path_only(self) -> None:
         key = request_key_builder(object, "necktie", request=_request(), response=None)
-        assert key == "necktie:/doctor?"
+        assert key == "necktie:/doctors?"
 
     def test_sorted_query_params(self) -> None:
         key = request_key_builder(
             object, "necktie", request=_request(b"b=2&a=1"), response=None
         )
-        assert key == "necktie:/doctor?a=1&b=2"
+        assert key == "necktie:/doctors?a=1&b=2"
 
     def test_repeated_params_preserved(self) -> None:
         key = request_key_builder(

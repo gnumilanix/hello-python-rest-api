@@ -1,6 +1,6 @@
 """Doctor endpoints.
 
-The resource is exposed as ``/doctor`` while the underlying table is
+The resource is exposed as ``/doctors`` while the underlying table is
 ``doctors``. Routes delegate to the service layer; this module only
 handles HTTP concerns (params, status codes, error mapping).
 """
@@ -22,7 +22,7 @@ from necktie.services import (
 )
 from necktie.utils.languages import Language
 
-router = APIRouter(prefix="/doctor", tags=["doctor"])
+router = APIRouter(prefix="/doctors", tags=["doctors"])
 
 
 @router.get("", response_model=list[Doctor])
