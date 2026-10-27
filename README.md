@@ -1,7 +1,7 @@
 # necktie
 
-[![CI](https://github.com/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/actions/workflows/ci.yaml)
-[![codecov](https://codecov.io/gh/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment/branch/main/graph/badge.svg)](https://codecov.io/gh/gnumilanix/Milan_Rajbhandari_Engineering_Lead_Technical_Assessment)
+[![CI](https://github.com/gnumilanix/hello-python-rest-api/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/gnumilanix/hello-python-rest-api/blob/main/.github/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/gnumilanix/hello-python-rest-api/branch/main/graph/badge.svg)](https://app.codecov.io/github/gnumilanix/hello-python-rest-api)
 
 Rest API in Python for doctor search.
 
